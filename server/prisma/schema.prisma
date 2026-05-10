@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Coach {
+  id        String        @id @default(uuid())
+  email     String        @unique
+  name      String
+  createdAt DateTime      @default(now())
+  clients   Client[]
+  plans     WorkoutPlan[]
+}
+
+model Client {
+  id        String        @id @default(uuid())
+  name      String
+  email     String        @unique
+  goal      String?
+  notes     String?
+  coachId   String
+  createdAt DateTime      @default(now())
+  coach     Coach         @relation(fields: [coachId], references: [id])
+  plans     WorkoutPlan[]
+  logs      WorkoutLog[]
+}
+
+model WorkoutPlan {
+  id        String       @id @default(uuid())
+  title     String
+  isActive  Boolean      @default(true)
+  clientId  String
+  coachId   String
+  createdAt DateTime     @default(now())
+  client    Client       @relation(fields: [clientId], references: [id])
+  coach     Coach        @relation(fields: [coachId], references: [id])
+  exercises Exercise[]
+  logs      WorkoutLog[]
+}
+
+model Exercise {
+  id           String        @id @default(uuid())
+  name         String
+  sets         Int
+  reps         Int
+  weight       Float?
+  notes        String?
+  planId       String
+  plan         WorkoutPlan   @relation(fields: [planId], references: [id])
+  exerciseLogs ExerciseLog[]
+}
+
+model WorkoutLog {
+  id           String        @id @default(uuid())
+  clientId     String
+  planId       String
+  note         String?
+  loggedAt     DateTime      @default(now())
+  client       Client        @relation(fields: [clientId], references: [id])
+  plan         WorkoutPlan   @relation(fields: [planId], references: [id])
+  exerciseLogs ExerciseLog[]
+}
+
+model ExerciseLog {
+  id           String     @id @default(uuid())
+  exerciseId   String
+  workoutLogId String
+  weightUsed   Float?
+  repsActual   Int?
+  exercise     Exercise   @relation(fields: [exerciseId], references: [id])
+  workoutLog   WorkoutLog @relation(fields: [workoutLogId], references: [id])
+}
