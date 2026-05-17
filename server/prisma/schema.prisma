@@ -6,70 +6,100 @@ datasource db {
   provider = "postgresql"
 }
 
-model Coach {
-  id        String        @id @default(uuid())
-  email     String        @unique
-  name      String
-  createdAt DateTime      @default(now())
-  clients   Client[]
-  plans     WorkoutPlan[]
+model User {
+  id            String        @id @default(uuid())
+  username      String        @unique
+  name          String
+  role          String
+  email         String        @unique
+  password      String
+  createdAt     DateTime      @default(now())
+  coachProfile  CoachProfile?
+  clientProfile ClientProfile?
 }
 
-model Client {
-  id        String        @id @default(uuid())
-  name      String
-  email     String        @unique
-  goal      String?
-  notes     String?
-  coachId   String
-  createdAt DateTime      @default(now())
-  coach     Coach         @relation(fields: [coachId], references: [id])
-  plans     WorkoutPlan[]
-  logs      WorkoutLog[]
+model CoachProfile {
+  id             String        @id @default(uuid())
+  userId         String        @unique
+  name           String
+  bio            String?
+  specialization String?
+  createdAt      DateTime      @default(now())
+  user           User          @relation(fields: [userId], references: [id])
+  workoutPlans   WorkoutPlan[]
+}
+
+model ClientProfile {
+  id           String        @id @default(uuid())
+  userId       String        @unique
+  name         String
+  goal         String?
+  notes        String?
+  createdAt    DateTime      @default(now())
+  user         User          @relation(fields: [userId], references: [id])
+  workoutPlans WorkoutPlan[]
+  workoutLogs  WorkoutLog[]
 }
 
 model WorkoutPlan {
-  id        String       @id @default(uuid())
-  title     String
-  isActive  Boolean      @default(true)
-  clientId  String
-  coachId   String
-  createdAt DateTime     @default(now())
-  client    Client       @relation(fields: [clientId], references: [id])
-  coach     Coach        @relation(fields: [coachId], references: [id])
-  exercises Exercise[]
-  logs      WorkoutLog[]
+  id            String        @id @default(uuid())
+  coachId       String
+  clientId      String
+  title         String
+  description   String?
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  coach         CoachProfile  @relation(fields: [coachId], references: [id])
+  client        ClientProfile @relation(fields: [clientId], references: [id])
+  workoutSplits WorkoutSplit[]
+  workoutLogs   WorkoutLog[]
+}
+
+model WorkoutSplit {
+  id            String        @id @default(uuid())
+  workoutPlanId String
+  day           String
+  isRestDay     Boolean       @default(false)
+  name          String?
+  muscleGroups  String?
+  workoutPlan   WorkoutPlan   @relation(fields: [workoutPlanId], references: [id])
+  exercises     Exercise[]
+  workoutLogs   WorkoutLog[]
 }
 
 model Exercise {
-  id           String        @id @default(uuid())
-  name         String
-  sets         Int
-  reps         Int
-  weight       Float?
-  notes        String?
-  planId       String
-  plan         WorkoutPlan   @relation(fields: [planId], references: [id])
-  exerciseLogs ExerciseLog[]
+  id             String        @id @default(uuid())
+  workoutSplitId String
+  name           String
+  sets           Int
+  reps           Int
+  weight         Float?
+  order          Int
+  notes          String?
+  workoutSplit   WorkoutSplit  @relation(fields: [workoutSplitId], references: [id])
+  exerciseLogs   ExerciseLog[]
 }
 
 model WorkoutLog {
-  id           String        @id @default(uuid())
-  clientId     String
-  planId       String
-  note         String?
-  loggedAt     DateTime      @default(now())
-  client       Client        @relation(fields: [clientId], references: [id])
-  plan         WorkoutPlan   @relation(fields: [planId], references: [id])
-  exerciseLogs ExerciseLog[]
+  id            String        @id @default(uuid())
+  clientId      String
+  planId        String
+  splitId       String
+  note          String?
+  loggedAt      DateTime      @default(now())
+  client        ClientProfile @relation(fields: [clientId], references: [id])
+  plan          WorkoutPlan   @relation(fields: [planId], references: [id])
+  split         WorkoutSplit  @relation(fields: [splitId], references: [id])
+  exerciseLogs  ExerciseLog[]
 }
 
 model ExerciseLog {
   id           String     @id @default(uuid())
-  exerciseId   String
   workoutLogId String
+  exerciseId   String
   weightUsed   Float?
   repsActual   Int?
-  exercise     Exercise   @relation(fields: [exerciseId], references: [id])
+  setNumber    Int
   workoutLog   WorkoutLog @relation(fields: [workoutLogId], references: [id])
+  exercise     Exercise   @relation(fields: [exerciseId], references: [id])
 }
