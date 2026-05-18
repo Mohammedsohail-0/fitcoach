@@ -9,7 +9,7 @@ app.use(express.json());
 
 // Routes
 app.use('/auth', require('./routes/auth'));
-// app.use('/coach', require('./routes/coach'));
+app.use('/coach', require('./routes/coach'));
 // app.use('/client', require('./routes/client'));
 // app.use('/workout', require('./routes/workout'));
 

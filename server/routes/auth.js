@@ -14,7 +14,7 @@ const prisma = new PrismaClient({ adapter });
 const router = express.Router();
 // Register
 router.post('/register', async (req, res) => {
-  const { username, name, email, password, role } = req.body;
+  const { username, name, email, password, role, coachId } = req.body;
 
   try {
     // Check if user already exists
@@ -52,7 +52,8 @@ router.post('/register', async (req, res) => {
       await prisma.clientProfile.create({
         data: {
           userId: user.id,
-          name: user.name
+          name: user.name,
+          coachId: coachId
         }
       });
     }

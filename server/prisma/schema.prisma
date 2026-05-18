@@ -19,24 +19,27 @@ model User {
 }
 
 model CoachProfile {
-  id             String        @id @default(uuid())
-  userId         String        @unique
+  id             String          @id @default(uuid())
+  userId         String          @unique
   name           String
   bio            String?
   specialization String?
-  createdAt      DateTime      @default(now())
-  user           User          @relation(fields: [userId], references: [id])
+  createdAt      DateTime        @default(now())
+  user           User            @relation(fields: [userId], references: [id])
+  clients        ClientProfile[]
   workoutPlans   WorkoutPlan[]
 }
 
 model ClientProfile {
   id           String        @id @default(uuid())
   userId       String        @unique
+  coachId      String
   name         String
   goal         String?
   notes        String?
   createdAt    DateTime      @default(now())
   user         User          @relation(fields: [userId], references: [id])
+  coach        CoachProfile  @relation(fields: [coachId], references: [id])
   workoutPlans WorkoutPlan[]
   workoutLogs  WorkoutLog[]
 }
