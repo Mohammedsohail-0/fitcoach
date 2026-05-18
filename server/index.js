@@ -13,6 +13,7 @@ app.use('/coach', require('./routes/coach'));
 app.use('/client', require('./routes/client'));
 app.use('/workout', require('./routes/workout'));
 app.use('/log', require('./routes/log'));
+app.use('/analytics', require('./routes/analytics'));
 
 const authMiddleware = require('./middleware/auth');
 
