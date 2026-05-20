@@ -1,24 +1,39 @@
-import logo from './logo.svg';
-import './App.css';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+
+// Pages
+import Login from './pages/Login';
+import Register from './pages/Register';
+import CoachDashboard from './pages/CoachDashboard';
+import ClientHome from './pages/ClientHome';
+
+const ProtectedRoute = ({ children, allowedRole }) => {
+  const { token, role } = useAuth();
+  if (!token) return <Navigate to="/login" />;
+  if (allowedRole && role !== allowedRole) return <Navigate to="/login" />;
+  return children;
+};
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      
+      <Route path="/coach" element={
+        <ProtectedRoute allowedRole="coach">
+          <CoachDashboard />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/client" element={
+        <ProtectedRoute allowedRole="client">
+          <ClientHome />
+        </ProtectedRoute>
+      } />
+
+      <Route path="*" element={<Navigate to="/login" />} />
+    </Routes>
   );
 }
 
