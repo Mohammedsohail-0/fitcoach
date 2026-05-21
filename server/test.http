@@ -1,2 +1,14 @@
 ###
-GET https://fitcoach-production-4c48.up.railway.app/health
+//https://fitcoach-xocd.onrender.com/register?invite=6c4e2339-eb7f-4deb-b3ca-4fe581c9eaf0
+###
+POST http://localhost:3001/auth/register
+Content-Type: application/json
+
+{
+  "username": "testclient3",
+  "name": "Test Client 3",
+  "email": "testclient3@gmail.com",
+  "password": "password123",
+  "role": "client",
+  "inviteCode": "6c4e2339-eb7f-4deb-b3ca-4fe581c9eaf0"
+}

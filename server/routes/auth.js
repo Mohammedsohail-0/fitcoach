@@ -14,9 +14,10 @@ const prisma = new PrismaClient({ adapter });
 const router = express.Router();
 // Register
 router.post('/register', async (req, res) => {
-  const { username, name, email, password, role, coachId } = req.body;
+  const { username, name, email, password, role, coachId, inviteCode } = req.body;
 
   try {
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email }
@@ -49,13 +50,22 @@ router.post('/register', async (req, res) => {
         }
       });
     } else if (role === 'client') {
+      const invite = await prisma.Invitation.findUnique({
+        where: {inviteCode: inviteCode}
+      });
+
+      
       await prisma.clientProfile.create({
         data: {
           userId: user.id,
           name: user.name,
-          coachId: coachId
+          coachId: invite.coachId
         }
       });
+      await prisma.Invitation.update({
+        where: { id: invite.id },
+        data: { isUsed: true }
+       });
     }
 
     res.status(201).json({ message: 'User registered successfully' });
@@ -101,5 +111,28 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ error: 'Something went wrong' });
   }
 });
+
+
+// Validate invite code
+router.get('/validate-invite/:code', async(req,res)=>{
+  try{
+
+    const invite = await prisma.Invitation.findUnique({
+      where: {inviteCode: req.params.code}
+    })
+    if(!invite){
+      return res.status(404).json({error: 'something went wrong'})
+    }
+    if(invite.isUsed){
+      return res.status(400).json({error: 'Invite code already used'})  
+    }
+  
+    res.json({ coachId: invite.coachId });
+  } catch(error){
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
 
 module.exports = router;

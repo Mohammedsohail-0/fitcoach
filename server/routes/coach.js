@@ -5,7 +5,7 @@ const { PrismaPg } = require('@prisma/adapter-pg');
 const authMiddleware = require('../middleware/auth');
 
 const pool = new (require('pg').Pool)({
-    connectionString: process.env.DATABASE_URL
+  connectionString: process.env.DATABASE_URL
 });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
@@ -14,21 +14,21 @@ const router = express.Router();
 
 //get all clients for coach 
 router.get('/clients', authMiddleware, async (req, res) => {
-    try {
-        const coach = await prisma.coachProfile.findUnique({
-            where: { userId: req.user.userId }
-        })
+  try {
+    const coach = await prisma.coachProfile.findUnique({
+      where: { userId: req.user.userId }
+    })
 
-        const clients = await prisma.clientProfile.findMany({
-            where: { coachId: coach.id },
-            include: { user: { select: { email: true, username: true } } }
-        });
-        //response
-        res.json(clients);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Something went wrong' });
-    }
+    const clients = await prisma.clientProfile.findMany({
+      where: { coachId: coach.id },
+      include: { user: { select: { email: true, username: true } } }
+    });
+    //response
+    res.json(clients);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
 });
 
 
@@ -76,6 +76,31 @@ router.delete('/clients/:id', authMiddleware, async (req, res) => {
     });
 
     res.json({ message: 'Client deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
+//invite client
+
+router.post('/invite', authMiddleware, async (req, res) => {
+  try {
+    const coach = await prisma.coachProfile.findUnique({
+      where: { userId: req.user.userId }
+    });
+
+    // create invitation
+    const invitation = await prisma.Invitation.create({
+      data: {
+        coachId: coach.id,
+      }
+    });
+
+    res.json({
+      inviteLink: `https://fitcoach-xocd.onrender.com/register?invite=${invitation.inviteCode}`,
+      inviteCode: invitation.inviteCode
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Something went wrong' });

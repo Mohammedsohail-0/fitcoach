@@ -28,6 +28,7 @@ model CoachProfile {
   user           User            @relation(fields: [userId], references: [id])
   clients        ClientProfile[]
   workoutPlans   WorkoutPlan[]
+  invitations    Invitation[]
 }
 
 model ClientProfile {
@@ -105,4 +106,13 @@ model ExerciseLog {
   setNumber    Int
   workoutLog   WorkoutLog @relation(fields: [workoutLogId], references: [id])
   exercise     Exercise   @relation(fields: [exerciseId], references: [id])
+}
+
+model Invitation {
+  id          String      @id @default(uuid())
+  coachId     String      @default(uuid()) 
+  inviteCode  String      @default(uuid()) @unique
+  isUsed      Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  coach CoachProfile @relation(fields: [coachId], references: [id])
 }
