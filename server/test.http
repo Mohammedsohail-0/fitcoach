@@ -1,14 +1,3 @@
 ###
-//https://fitcoach-xocd.onrender.com/register?invite=6c4e2339-eb7f-4deb-b3ca-4fe581c9eaf0
-###
-POST http://localhost:3001/auth/register
-Content-Type: application/json
-
-{
-  "username": "testclient3",
-  "name": "Test Client 3",
-  "email": "testclient3@gmail.com",
-  "password": "password123",
-  "role": "client",
-  "inviteCode": "6c4e2339-eb7f-4deb-b3ca-4fe581c9eaf0"
-}
+POST http://localhost:3001/coach/invite
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ODM5YWMzYS0xY2Y4LTRiYjQtYWJkOC1iZTZmZDc1ZWViZmUiLCJyb2xlIjoiY29hY2giLCJpYXQiOjE3Nzk1MjAzMDQsImV4cCI6MTc4MDEyNTEwNH0.aR8csybXSFq-bPRWC6CnX7SZpAgh74HTaEyKBAL01Gk

@@ -98,7 +98,7 @@ router.post('/invite', authMiddleware, async (req, res) => {
     });
 
     res.json({
-      inviteLink: `https://fitcoach-xocd.onrender.com/register?invite=${invitation.inviteCode}`,
+      inviteLink: `http://localhost:3000/register?invite=${invitation.inviteCode}`,
       inviteCode: invitation.inviteCode
     });
   } catch (error) {
