@@ -107,4 +107,22 @@ router.post('/invite', authMiddleware, async (req, res) => {
   }
 });
 
+
+// get coach's own profile
+router.get('/profile', authMiddleware, async (req, res) => {
+  try {
+    const coach = await prisma.coachProfile.findUnique({
+      where: { userId: req.user.userId },
+      include: { user: { select: { email: true, username: true } } }
+    });
+
+    if (!coach) return res.status(404).json({ error: 'Coach not found' });
+
+    res.json(coach);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
 module.exports = router;
