@@ -18,10 +18,19 @@ router.get('/clients', authMiddleware, async (req, res) => {
     const coach = await prisma.coachProfile.findUnique({
       where: { userId: req.user.userId }
     })
-
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const clients = await prisma.clientProfile.findMany({
       where: { coachId: coach.id },
-      include: { user: { select: { email: true, username: true } } }
+      include: {
+        user: { select: { email: true, username: true } },
+        workoutLogs: {
+          where: {
+            loggedAt: { gte: sevenDaysAgo }
+          },
+          select: { loggedAt: true }
+        }
+      }
     });
     //response
     res.json(clients);

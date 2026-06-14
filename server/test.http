@@ -1,3 +1,3 @@
 ###
-GET http://localhost:3001/coach/profile
+GET http://localhost:3001/coach/clients
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ODM5YWMzYS0xY2Y4LTRiYjQtYWJkOC1iZTZmZDc1ZWViZmUiLCJyb2xlIjoiY29hY2giLCJpYXQiOjE3ODE0MTg2NzAsImV4cCI6MTc4MjAyMzQ3MH0.eoLptuMIgyqxeuq7EL555XIXGdRr893Zd6h5DXG4XWM
