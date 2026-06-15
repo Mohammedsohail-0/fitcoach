@@ -12,6 +12,7 @@
     flex-direction: column;
     text-align: center;
 }
+
 .c-wrapper {
     display: flex;
     flex-direction: row;
@@ -25,17 +26,19 @@
     gap: 30px;
 }
 
-.c-wrapper > div {
+.c-wrapper>div {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     flex: 1;
-    min-width: 0; /* allows shrinking below 150px if needed */
+    min-width: 0;
+    /* allows shrinking below 150px if needed */
 }
 
 .count {
-    font-size: clamp(1.2rem, 5vw, 2rem); /* scales with screen width */
+    font-size: clamp(1.2rem, 5vw, 2rem);
+    /* scales with screen width */
 }
 
 .c-label {
@@ -44,11 +47,115 @@
 
 /* clients table*/
 
-.client-profile-dashboard{
+.client-profile-dashboard {
     display: flex;
     flex-direction: column;
 }
 
-.client-profile-dashboard img{
-    height: 100px;
+.client-profile-dashboard img {
+    width: 60px;
+    height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  opacity: 0.7;
+}
+
+.activity-dots {
+    display: flex;
+    gap: 8px;
+}
+
+.dot-active,
+.dot-empty {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.dot-active {
+    background: var(--accent);
+}
+
+.dot-empty {
+    border: 1px solid var(--border);
+    background: transparent;
+}
+
+.day-label {
+    font-family: var(--font-body);
+    font-size: small;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.status-active,
+.status-inactive {
+    font-family: var(--font-body);
+}
+
+.status-active {
+    color: var(--accent) !important;
+}
+
+.status-inactive {
+    color: var(--error) !important;
+}
+
+.table-container {
+  background-color: #1a1a1a;
+  border: 1px solid #333333;
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Base table settings */
+.clients-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--text-body);
+  color: var(--text-primary);
+}
+
+/* Header layout rules */
+.clients-table th {
+  color: #a0a0a0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #333333;
+  text-align: center; /* Centers header text */
+}
+
+/* Left-align the very first column header (CLIENT) */
+.clients-table th:first-child {
+  text-align: left;
+  padding-left: 20px;
+}
+
+/* Body row spacing and alignment */
+.clients-table td {
+  padding: 30px 10px;
+  vertical-align: middle;
+  text-align: center; /* Centers program text, dots, and status */
+  font-size: 14px;
+}
+
+/* Ensure the client column aligns contents neatly to the left */
+.clients-table td:first-child {
+  text-align: left;
+  padding-left: 20px;
+}
+
+/* Flexbox wrapper configuration for your avatar + text */
+.client-profile-dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: max-content;
+  gap: 8px;
+  color: #a0a0a0;
+  font-size: 12px;
 }
