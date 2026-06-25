@@ -106,7 +106,8 @@
   border: 1px solid #333333;
   border-radius: 12px;
   padding: 24px;
-  width: 100%;
+  margin: 50px;
+  margin-top: 0px;
   box-sizing: border-box;
 }
 
@@ -124,29 +125,17 @@
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 1px;
-  padding-bottom: 20px;
+  padding: 0 20px 20px 20px;
   border-bottom: 1px solid #333333;
-  text-align: center; /* Centers header text */
+  text-align: left; /* Centers header text */
 }
 
-/* Left-align the very first column header (CLIENT) */
-.clients-table th:first-child {
-  text-align: left;
-  padding-left: 20px;
-}
+
 
 /* Body row spacing and alignment */
 .clients-table td {
-  padding: 30px 10px;
-  vertical-align: middle;
-  text-align: center; /* Centers program text, dots, and status */
-  font-size: 14px;
-}
-
-/* Ensure the client column aligns contents neatly to the left */
-.clients-table td:first-child {
-  text-align: left;
-  padding-left: 20px;
+ text-align: left;
+ padding: 20px;
 }
 
 /* Flexbox wrapper configuration for your avatar + text */
@@ -159,3 +148,50 @@
   color: #a0a0a0;
   font-size: 12px;
 }
+
+.clients-table-header{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-inline: 100px;
+    margin-top: 100px;
+    
+}
+
+.search-bar-add-client-wrapper{
+    display: flex;
+}
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #1a1a1a;
+    border: 1px solid #333333;
+    border-radius: 100px;
+    padding: 0px 18px;
+    height: 45px;
+    width: 320px;
+    margin-inline: 10px;
+    transition: border-color 0.2s ease;
+}
+
+.search-bar:focus-within {
+    border-color: var(--accent);
+}
+
+
+
+.search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: var(--font-body);
+}
+
+.search-input::placeholder {
+    color: #888888;
+}
+

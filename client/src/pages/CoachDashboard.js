@@ -2,6 +2,7 @@ import React from "react";
 import './CoachDashboard.css';
 import { useState, useEffect } from "react";
 import api from "../services/api";
+import Button from "../components/Button"
 
 
 
@@ -9,7 +10,7 @@ import api from "../services/api";
 function CoachDashboard() {
   const [coachName, setCoachName] = useState('');
   const [clients, setClients] = useState([]);
- 
+
 
   // fetch coach's own profile
   useEffect(() => {
@@ -54,6 +55,24 @@ function CoachDashboard() {
           </div>
         </div>
       </div>
+      {/* Clients table header */}
+      <div className="clients-table-header">
+        <h1>
+          Clients
+        </h1>
+        <div className="search-bar-add-client-wrapper">
+          <div className="search-bar">
+            <input
+              type="text"
+              placeholder="Search clients"
+              className="search-input"
+            />
+          </div>
+          <div>
+            <Button variant="primary" size="md" className="Add-client-Btn" text="Add Client"></Button>
+          </div>
+        </div>
+      </div>
 
       {/* Clients table  */}
 
@@ -70,7 +89,7 @@ function CoachDashboard() {
           <tbody>
             {
               clients.map((client) => (
-                
+
                 <tr key={client.id}>
                   <td>
                     <div className="client-profile-dashboard">
@@ -82,9 +101,9 @@ function CoachDashboard() {
                   <td>
                     <ActivityDots workoutLogs={client.workoutLogs} />
                   </td>
-                  <td className={client.workoutLogs.length > 0 ? "status-active":"status-inactive"}>
-                    {client.workoutLogs.length > 0 ? "Active":"Inactive"}
-                    
+                  <td className={client.workoutLogs.length > 0 ? "status-active" : "status-inactive"}>
+                    {client.workoutLogs.length > 0 ? "Active" : "Inactive"}
+
                   </td>
                 </tr>
               ))
@@ -119,7 +138,7 @@ function ActivityDots({ workoutLogs }) {
         targetDate.setDate(targetDate.getDate() + diff);
 
         const logged = hasLoggedOnDate(workoutLogs, targetDate);
-        
+
         return (
           <div key={index} className="day-column">
             <div className={logged ? "dot-active" : "dot-empty"}></div>
