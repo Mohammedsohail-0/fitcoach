@@ -47,17 +47,13 @@
 
 /* clients table*/
 
-.client-profile-dashboard {
-    display: flex;
-    flex-direction: column;
-}
 
 .client-profile-dashboard img {
     width: 60px;
     height: 60px;
-  border-radius: 50%;
-  object-fit: cover;
-  opacity: 0.7;
+    border-radius: 50%;
+    object-fit: cover;
+    opacity: 0.7;
 }
 
 .activity-dots {
@@ -102,65 +98,67 @@
 }
 
 .table-container {
-  background-color: #1a1a1a;
-  border: 1px solid #333333;
-  border-radius: 12px;
-  padding: 24px;
-  margin: 50px;
-  margin-top: 0px;
-  box-sizing: border-box;
+    background-color: #1a1a1a;
+    border: 1px solid #333333;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 50px;
+    margin-top: 0px;
+    box-sizing: border-box;
 }
 
 /* Base table settings */
 .clients-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--text-body);
-  color: var(--text-primary);
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--text-body);
+    color: var(--text-primary);
 }
 
 /* Header layout rules */
 .clients-table th {
-  color: #a0a0a0;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  padding: 0 20px 20px 20px;
-  border-bottom: 1px solid #333333;
-  text-align: left; /* Centers header text */
+    color: #a0a0a0;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 0 20px 20px 20px;
+    border-bottom: 1px solid #333333;
+    text-align: left;
+    /* Centers header text */
 }
 
 
 
 /* Body row spacing and alignment */
 .clients-table td {
- text-align: left;
- padding: 20px;
+    text-align: left;
+    padding: 20px;
 }
 
 /* Flexbox wrapper configuration for your avatar + text */
 .client-profile-dashboard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: max-content;
-  gap: 8px;
-  color: #a0a0a0;
-  font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: max-content;
+    gap: 8px;
+    color: #a0a0a0;
+    font-size: 12px;
 }
 
-.clients-table-header{
+.clients-table-header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     margin-inline: 100px;
     margin-top: 100px;
-    
+
 }
 
-.search-bar-add-client-wrapper{
+.search-bar-add-client-wrapper {
     display: flex;
 }
+
 .search-bar {
     display: flex;
     align-items: center;
@@ -193,5 +191,138 @@
 
 .search-input::placeholder {
     color: #888888;
+
+
 }
 
+@media (max-width: 768px) {
+
+    .clients-table-header {
+        display: flex;
+        flex-direction: column;
+        margin-inline: 20px;
+        margin-bottom: 50px;
+    }
+
+    .clients-table-header h1 {
+        margin-left: 15px;
+    }
+
+    .search-bar-add-client-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        /* make wrapper span full width */
+    }
+
+    .search-bar {
+        width: 100%;
+        /* override fixed 320px */
+        margin-inline: 0;
+        /* remove left/right margin, let parent's margin-inline:20px handle spacing */
+        box-sizing: border-box;
+    }
+
+    .btn {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+
+
+
+    .clients-table thead {
+        display: none;
+    }
+
+    .clients-table,
+    .clients-table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    .table-container {
+        background: none;
+        padding: 0;
+        border: none;
+    }
+
+    .clients-table tr {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        background-color: #1a1a1a;
+        border: 1px solid #333333;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .clients-table td {
+        display: block;
+        border: none;
+        padding: 0;
+        width: auto;
+    }
+
+    .clients-table td::before {
+        display: none;
+    }
+
+    .clients-table td[data-label="Client"] {
+        order: 1;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .clients-table td[data-label="Status"] {
+        order: 2;
+        font-size: 14px;
+        font-weight: 500;
+        flex-shrink: 0;
+    }
+
+    .clients-table td[data-label="Program"] {
+        order: 3;
+        width: 100%;
+        font-size: 14px;
+        color: #888888;
+        margin-top: 12px;
+    }
+
+    .clients-table td[data-label="Activity"] {
+        order: 4;
+        width: 100%;
+        margin-top: 16px;
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .client-profile-dashboard {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 0;
+    }
+
+    .client-profile-dashboard .client-avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .client-profile-dashboard p {
+        font-size: 18px;
+        font-weight: 600;
+        color: #ffffff;
+        margin: 0;
+    }
+}

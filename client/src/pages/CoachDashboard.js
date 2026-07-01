@@ -62,14 +62,14 @@ function CoachDashboard() {
         </h1>
         <div className="search-bar-add-client-wrapper">
           <div className="search-bar">
-            <input
+           <input
               type="text"
               placeholder="Search clients"
               className="search-input"
             />
           </div>
           <div>
-            <Button variant="primary" size="md" className="Add-client-Btn" text="Add Client"></Button>
+            <Button variant="secondary" size="sm" className="add-client-btn" text="Add Client"></Button>
           </div>
         </div>
       </div>
@@ -91,17 +91,18 @@ function CoachDashboard() {
               clients.map((client) => (
 
                 <tr key={client.id}>
-                  <td>
+                  <td  data-label="Client">
                     <div className="client-profile-dashboard">
                       <img className="client-avatar" src="https://i.ibb.co/twxKnHfb/profileavatar.png" alt="client profile"></img>
-                      {client.name}
+                      <p>{client.name}</p>
+                   
                     </div>
                   </td>
-                  <td>{client.goal}</td>
-                  <td>
+                  <td data-label="Program">{client.goal}</td>
+                  <td  data-label="Activity">
                     <ActivityDots workoutLogs={client.workoutLogs} />
                   </td>
-                  <td className={client.workoutLogs.length > 0 ? "status-active" : "status-inactive"}>
+                  <td data-label="Status"  className={client.workoutLogs.length > 0 ? "status-active" : "status-inactive"}>
                     {client.workoutLogs.length > 0 ? "Active" : "Inactive"}
 
                   </td>
