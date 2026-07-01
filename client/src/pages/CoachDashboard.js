@@ -3,11 +3,13 @@ import './CoachDashboard.css';
 import { useState, useEffect } from "react";
 import api from "../services/api";
 import Button from "../components/Button"
+import { useNavigate } from "react-router-dom";
 
 
 
 
 function CoachDashboard() {
+  const navigate = useNavigate();
   const [coachName, setCoachName] = useState('');
   const [clients, setClients] = useState([]);
 
@@ -69,7 +71,7 @@ function CoachDashboard() {
             />
           </div>
           <div>
-            <Button variant="secondary" size="sm" className="add-client-btn" text="Add Client"></Button>
+            <Button variant="secondary" size="sm" className="add-client-btn" text="+ Add Client"></Button>
           </div>
         </div>
       </div>
@@ -90,7 +92,7 @@ function CoachDashboard() {
             {
               clients.map((client) => (
 
-                <tr key={client.id}>
+                <tr key={client.id} onClick={() => navigate(`/client/${client.id}`)} style={{ cursor: 'pointer' }}>
                   <td  data-label="Client">
                     <div className="client-profile-dashboard">
                       <img className="client-avatar" src="https://i.ibb.co/twxKnHfb/profileavatar.png" alt="client profile"></img>

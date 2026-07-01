@@ -36,7 +36,10 @@ model ClientProfile {
   userId       String        @unique
   coachId      String
   name         String
+  age          Int?
+  gender       String?
   goal         String?
+  bodyWeight   Int?
   notes        String?
   createdAt    DateTime      @default(now())
   user         User          @relation(fields: [userId], references: [id])

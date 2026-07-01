@@ -5,6 +5,7 @@ import { useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import CoachDashboard from './pages/CoachDashboard';
+import ClientDetail from './pages/ClientDetail';
 import ClientHome from './pages/ClientHome';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
@@ -19,6 +20,7 @@ function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+
       
       <Route path="/coach" element={
         <ProtectedRoute allowedRole="coach">
@@ -31,7 +33,7 @@ function App() {
           <ClientHome />
         </ProtectedRoute>
       } />
-
+      <Route path="client/:id" element = {<ClientDetail/>}/>
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   );
