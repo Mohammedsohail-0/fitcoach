@@ -57,6 +57,25 @@ router.get('/plan/:clientId', authMiddleware, async (req, res) => {
 });
 
 
+//get current plan
+router.get('/activePlan/:clientId', authMiddleware, async (req, res) => {
+  try {
+    const plan = await prisma.workoutPlan.findFirst({
+      where: { clientId: req.params.clientId, isActive: true },
+      include: { workoutSplits: { include: { exercises: true } } }
+    });
+
+    if (!plan) {
+      return res.status(404).json({ error: 'No active plan found for this client' });
+    }
+
+    res.json(plan);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
 
 // Update plan
 router.put('/plan/:id', authMiddleware, async (req, res) => {
@@ -157,14 +176,14 @@ router.post('/exercise', authMiddleware, async (req, res) => {
   const { splitId, name, sets, reps, weight, order, notes } = req.body;
   try {
     const exercise = await prisma.exercise.create({
-      data: { 
-        workoutSplitId: splitId, 
-        name, 
-        sets, 
-        reps, 
-        weight, 
-        order, 
-        notes 
+      data: {
+        workoutSplitId: splitId,
+        name,
+        sets,
+        reps,
+        weight,
+        order,
+        notes
       }
     });
 

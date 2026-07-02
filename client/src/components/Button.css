@@ -40,6 +40,17 @@
   background: var(--accent-hover);
   color: black;
 }
+/*utility buttons*/
+.btn-utility {
+  background: white;
+  color: black;
+}
+
+.btn-utility:hover {
+  background: transparent;
+  color: rgb(255, 255, 255);
+  border: 2px solid white;
+}
 
 /* Outline filled (was duplicate .btn-outline — renamed) */
 .btn-outline-filled {
