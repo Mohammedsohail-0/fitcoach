@@ -2,19 +2,21 @@ import { useParams } from 'react-router-dom';
 import { useState, useEffect } from "react";
 import api from "../services/api";
 import './ClientDetail.css';
+import Button from "../components/Button"
 
 
 function ClientDetail() {
     const { id } = useParams();
     const [client, setClient] = useState(null);
     const [workoutPlan, setWorkoutPlan] = useState(null);
+    const [workoutSplit, setWorkoutSplit] = useState([]);
 
     useEffect(() => {
         const fetchClient = async () => {
             try {
                 const clientObj = await api.get(`/coach/clients/${id}`);
                 setClient(clientObj.data);
-              
+
             } catch {
                 console.log("error");
             }
@@ -22,20 +24,41 @@ function ClientDetail() {
         fetchClient();
     }, [])
 
-    useEffect(()=>{
-        const fetchWorkoutPlan = async ()=>{
-            try{
+    useEffect(() => {
+        const fetchWorkoutPlan = async () => {
+            try {
                 const workoutPlanObj = await api.get(`/workout/activePlan/${id}`)
                 setWorkoutPlan(workoutPlanObj.data);
-                console.log(workoutPlanObj.data.id)
-            }catch{
+            } catch {
                 console.log("error")
             }
         }
         fetchWorkoutPlan();
-    },[])
-
-    if (!client) return <p>Loading...</p>;
+    }, [])
+    
+    useEffect(()=>{
+         if (!workoutPlan) return;
+        const fetchWorkoutSplit = async () => {
+            try{
+                const workoutSplitObj = await api.get(`/workout/split/${workoutPlan?.id}`)
+                 setWorkoutSplit(workoutSplitObj.data);
+                 console.log(workoutSplit)
+            }catch{
+                console.log("workout split not found")
+            }
+        }
+        fetchWorkoutSplit();
+    },[workoutPlan])
+    
+    
+        if (!client) return <p>Loading...</p>;
+        function checkData(data) {
+            if (!data) {
+                return "Nothing Found"
+            } else {
+                return data
+            }
+        }
 
     return (
         <>
@@ -46,11 +69,23 @@ function ClientDetail() {
                     <p className='notes'>{client.notes}</p>
                 </div>
             </div>
+            <div className='btns-container1'>
+                <Button variant='utility' size='sm' text={"Assign Plan"} className='assign-plan-btn'></Button>
+                <Button variant='utility' size='sm' text={"Edit Plan"} className='edit-plan-btn'></Button>
+            </div>
 
             <div className='workoutPlan-container'>
-                <h1>Workout Plan:</h1>
-                <p></p>
+                <div className='workoutPlan-header'>
+                    <p className='workoutPlan-lable'>Workout Plan:</p>
+                    <p className='workoutPlan'>{checkData(workoutPlan?.title)}</p>
+                </div>
+                <div className='btns-container2'>
+                    <Button variant='utility' size='sm' text={"Assign Plan"} className='assign-plan-btn'></Button>
+                    <Button variant='utility' size='sm' text={"Edit Plan"} className='edit-plan-btn'></Button>
+                </div>
             </div>
+
+            <WorkoutSplitTable workoutSplit={workoutSplit} workoutPlan={workoutPlan}></WorkoutSplitTable>
         </>
     );
 }
@@ -94,3 +129,35 @@ export function ClientCard({ client }) {
     );
 }
 
+export function WorkoutSplitTable({ workoutPlan, workoutSplit}) {
+    return (
+        <div className='workoutSplit-container'>
+
+
+
+            <table className='workoutSplit-table'>
+                <thead>
+                    <tr>
+                        <th>DAY</th>
+                        <th>MUSCLE GROUP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {
+                        workoutSplit.map((workout)=>(
+                            <tr key={workout.id}>
+                                <td>
+                                    {workout.day}
+                                </td>
+                                <td>
+                                    {workout.muscleGroups}
+                                </td>
+                            </tr>
+                        ))
+                    }
+                   
+                </tbody>
+            </table>
+        </div>
+    );
+}

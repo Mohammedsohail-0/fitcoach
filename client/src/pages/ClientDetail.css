@@ -30,7 +30,7 @@
 }
 
 .client-card h2 {
-  font-size: clamp(1rem, 5cqw, 1.3rem);
+    font-size: clamp(1rem, 5cqw, 1.3rem);
 }
 
 .client-email-container p,
@@ -53,7 +53,7 @@
     color: var(--accent);
     text-align: center;
     width: 90%;
-    
+
 }
 
 .client-goal-container {
@@ -81,21 +81,81 @@
 
 
 
-.notes-container{
+.notes-container {
     display: flex;
     justify-self: center;
     border: 1px solid var(--border);
     border-radius: 15px;
-    width: 50%
+    width: clamp(320px, 90%, 1000px);
+
 }
-.notes-wraper{
+
+.notes-wraper {
     display: flex;
     padding: 20px;
 }
-.notes-lable{
+
+.notes-lable {
     font-weight: bold;
 }
-.notes{
+
+.notes {
     color: var(--text-secondary);
     margin-inline: 20px;
+}
+
+.workoutPlan-container {
+    display: flex;
+    flex-direction: row;
+    margin-top: 4rem;
+    justify-content: space-around;
+    padding: 10px;
+}
+.btns-container2 {
+    display: flex;
+    gap: 1rem;
+}
+
+.btns-container2 button {
+    width: 120px;
+}
+
+.btns-container1 button {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .btns-container2 button {
+        display: none;
+    }
+
+    .btns-container1 {
+        display: flex; /* changed from block, see note below */
+        gap: 1rem;
+        justify-content: center;
+        padding: 16px;
+    }
+
+    .btns-container1 button {
+        display: block; /* ✅ actually show them */
+        width: 100%
+    }
+}
+
+
+.workoutPlan-header {
+    display: flex;
+    flex-direction: row;
+}
+
+.workoutPlan-lable {
+    font-size: clamp(1rem, 5cqw, 1.3rem);
+    font-weight: bolder;
+}
+
+.workoutPlan {
+    font-size: clamp(1rem, 5cqw, 1.3rem);
+    font-weight: normal;
+    margin-inline: 1rem;
+    color: var(--text-secondary);
 }
