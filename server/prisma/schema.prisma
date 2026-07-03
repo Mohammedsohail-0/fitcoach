@@ -83,7 +83,7 @@ model Exercise {
   weight         Float?
   order          Int
   notes          String?
-  workoutSplit   WorkoutSplit  @relation(fields: [workoutSplitId], references: [id])
+  workoutSplit   WorkoutSplit  @relation(fields: [workoutSplitId], references: [id],  onDelete: Cascade)
   exerciseLogs   ExerciseLog[]
 }
 

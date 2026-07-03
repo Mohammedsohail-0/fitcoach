@@ -35,30 +35,30 @@ function ClientDetail() {
         }
         fetchWorkoutPlan();
     }, [])
-    
-    useEffect(()=>{
-         if (!workoutPlan) return;
+
+    useEffect(() => {
+        if (!workoutPlan) return;
         const fetchWorkoutSplit = async () => {
-            try{
+            try {
                 const workoutSplitObj = await api.get(`/workout/split/${workoutPlan?.id}`)
-                 setWorkoutSplit(workoutSplitObj.data);
-                 console.log(workoutSplit)
-            }catch{
+                setWorkoutSplit(workoutSplitObj.data);
+                console.log(workoutSplit)
+            } catch {
                 console.log("workout split not found")
             }
         }
         fetchWorkoutSplit();
-    },[workoutPlan])
-    
-    
-        if (!client) return <p>Loading...</p>;
-        function checkData(data) {
-            if (!data) {
-                return "Nothing Found"
-            } else {
-                return data
-            }
+    }, [workoutPlan])
+
+
+    if (!client) return <p>Loading...</p>;
+    function checkData(data) {
+        if (!data) {
+            return "Nothing Found"
+        } else {
+            return data
         }
+    }
 
     return (
         <>
@@ -129,7 +129,8 @@ export function ClientCard({ client }) {
     );
 }
 
-export function WorkoutSplitTable({ workoutPlan, workoutSplit}) {
+export function WorkoutSplitTable({ workoutPlan, workoutSplit }) {
+    
     return (
         <div className='workoutSplit-container'>
 
@@ -144,18 +145,29 @@ export function WorkoutSplitTable({ workoutPlan, workoutSplit}) {
                 </thead>
                 <tbody>
                     {
-                        workoutSplit.map((workout)=>(
-                            <tr key={workout.id}>
-                                <td>
-                                    {workout.day}
+                        workoutSplit.map((split) => (
+                            <tr key={split.id}>
+                                <td className="day-cell">
+                                    {split.day}
                                 </td>
                                 <td>
-                                    {workout.muscleGroups}
+                                    {split.isRestDay ? (
+                                        <span className="rest-text">rest</span>
+                                    ) : (
+                                        <span className="muscle-group-cell">{split.muscleGroups}</span>
+                                    )}
+                                </td>
+                                <td>
+                                    {split.isRestDay ? (
+                                        <span className="rest-dash">--</span>
+                                    ) : (
+                                        <Button text={"View exercise"} variant='secondary' size='sm' className="view-exercise-btn">View exercise</Button>
+                                    )}
                                 </td>
                             </tr>
                         ))
                     }
-                   
+
                 </tbody>
             </table>
         </div>

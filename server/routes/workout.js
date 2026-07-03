@@ -112,7 +112,24 @@ router.delete('/plan/:id', authMiddleware, async (req, res) => {
 // Create workout split
 router.post('/split', authMiddleware, async (req, res) => {
   const { planId, day, isRestDay, name, muscleGroups } = req.body;
+
   try {
+    // check how many splits already exist for this plan
+    const existingSplits = await prisma.workoutSplit.findMany({
+      where: { workoutPlanId: planId }
+    });
+
+    if (existingSplits.length >= 7) {
+      return res.status(400).json({ error: 'This plan already has 7 days assigned' });
+    }
+
+    // check if this specific day already exists for this plan
+    const dayAlreadyExists = existingSplits.some((split) => split.day === day);
+
+    if (dayAlreadyExists) {
+      return res.status(400).json({ error: `${day} is already assigned for this plan` });
+    }
+
     const split = await prisma.workoutSplit.create({
       data: { workoutPlanId: planId, day, isRestDay, name, muscleGroups }
     });

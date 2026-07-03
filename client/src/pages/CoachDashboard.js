@@ -40,6 +40,8 @@ function CoachDashboard() {
     fetchClients();
   }, [])
 
+
+
   return (
     <div className="coachDashboard">
       <div className="header">

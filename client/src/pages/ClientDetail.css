@@ -159,3 +159,77 @@
     margin-inline: 1rem;
     color: var(--text-secondary);
 }
+
+
+
+.workoutSplit-container {
+    border: 1px solid #333333;
+    border-radius: 12px;
+    padding: 20px 0 0;
+    margin: 50px;
+    margin-top: 0px;
+    box-sizing: border-box;
+    background-color: #0a0a0a;
+}
+
+.workoutSplit-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--text-body);
+    color: var(--text-primary);
+}
+
+.workoutSplit-table th {
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0 24px 20px 24px;
+    border-bottom: 1px solid #333333;
+    text-align: left;
+    color: #ffffff;
+    font-size: 0.95rem;
+}
+
+.workoutSplit-table td {
+    text-align: left;
+    padding: 16px 24px;
+    font-size: 1rem;
+    border-top: 1px solid #333333;
+}
+
+/* vertical divider lines between columns */
+
+.workoutSplit-table td:not(:last-child) {
+    border-right: 1px solid #333333;
+}
+
+.workoutSplit-table th:not(:first-child){
+    border: none;
+}
+
+.day-cell {
+    font-weight: 700;
+    text-transform: lowercase;
+    color: #ffffff;
+}
+
+.muscle-group-cell {
+    color: #e5e5e5;
+}
+
+.rest-text {
+    color: var(--error);
+    font-weight: 500;
+}
+
+.rest-dash {
+    color: var(--error);
+    display: block;
+    text-align: left;
+}
+
+.view-exercise-btn {
+   border: dotted;
+   width: 50%;
+}
+
