@@ -111,6 +111,7 @@
     justify-content: space-around;
     padding: 10px;
 }
+
 .btns-container2 {
     display: flex;
     gap: 1rem;
@@ -130,14 +131,16 @@
     }
 
     .btns-container1 {
-        display: flex; /* changed from block, see note below */
+        display: flex;
+        /* changed from block, see note below */
         gap: 1rem;
         justify-content: center;
         padding: 16px;
     }
 
     .btns-container1 button {
-        display: block; /* ✅ actually show them */
+        display: block;
+        /* ✅ actually show them */
         width: 100%
     }
 }
@@ -203,7 +206,7 @@
     border-right: 1px solid #333333;
 }
 
-.workoutSplit-table th:not(:first-child){
+.workoutSplit-table th:not(:first-child) {
     border: none;
 }
 
@@ -229,7 +232,72 @@
 }
 
 .view-exercise-btn {
-   border: dotted;
-   width: 50%;
+    border: dotted;
+    width: 50%;
 }
 
+
+@media (max-width: 768px) {
+
+    .workoutPlan-container{
+        justify-self: center;
+        margin-block: 2rem;
+    }
+    .workoutSplit-table thead {
+        display: none;
+    }
+     .workoutSplit-table td:not(:last-child) {
+        border-right: none; /* cancel the desktop divider */
+    }
+
+    .workoutSplit-table {
+        display: block;
+        width: 100%;
+        border: none;
+    }
+
+    .workoutSplit-table tbody {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        width: 100%;
+    }
+
+    .workoutSplit-container {
+        background: none;
+        padding: 0;
+        border: none;
+        margin-inline:20px ;
+    }
+
+    .workoutSplit-table tr {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-start;
+        background-color: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px;
+        box-sizing: border-box;
+        height: 100%;
+       
+    }
+
+    .workoutSplit-table td {
+        display: block;
+        border: none;
+        padding: 6px 0;
+        width: auto;
+    }
+
+    .view-exercise-btn {
+        border: dotted;
+        width: 100%;
+        display: block;
+        padding: 8px;
+    }
+
+   
+    
+}

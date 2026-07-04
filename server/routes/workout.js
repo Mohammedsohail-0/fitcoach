@@ -41,11 +41,14 @@ router.post('/plan', authMiddleware, async (req, res) => {
 
 
 
-// Get all plans for a client
-router.get('/plan/:clientId', authMiddleware, async (req, res) => {
+// Get all template plans for the logged-in coach
+router.get('/plan/templates', authMiddleware, async (req, res) => {
   try {
     const plans = await prisma.workoutPlan.findMany({
-      where: { clientId: req.params.clientId },
+      where: {
+        coachId: req.user.userId,
+        isTemplate: true
+      },
       include: { workoutSplits: { include: { exercises: true } } }
     });
 

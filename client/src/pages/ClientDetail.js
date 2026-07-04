@@ -10,6 +10,8 @@ function ClientDetail() {
     const [client, setClient] = useState(null);
     const [workoutPlan, setWorkoutPlan] = useState(null);
     const [workoutSplit, setWorkoutSplit] = useState([]);
+    const [showPlanSelection, setShowPlanSelection] = useState(false);
+
 
     useEffect(() => {
         const fetchClient = async () => {
@@ -22,7 +24,7 @@ function ClientDetail() {
             }
         }
         fetchClient();
-    }, [])
+    }, [id])
 
     useEffect(() => {
         const fetchWorkoutPlan = async () => {
@@ -34,7 +36,7 @@ function ClientDetail() {
             }
         }
         fetchWorkoutPlan();
-    }, [])
+    }, [id])
 
     useEffect(() => {
         if (!workoutPlan) return;
@@ -42,7 +44,7 @@ function ClientDetail() {
             try {
                 const workoutSplitObj = await api.get(`/workout/split/${workoutPlan?.id}`)
                 setWorkoutSplit(workoutSplitObj.data);
-                console.log(workoutSplit)
+
             } catch {
                 console.log("workout split not found")
             }
@@ -59,6 +61,7 @@ function ClientDetail() {
             return data
         }
     }
+
 
     return (
         <>
@@ -80,12 +83,15 @@ function ClientDetail() {
                     <p className='workoutPlan'>{checkData(workoutPlan?.title)}</p>
                 </div>
                 <div className='btns-container2'>
-                    <Button variant='utility' size='sm' text={"Assign Plan"} className='assign-plan-btn'></Button>
+                    <Button variant='utility' onClick={() => setShowPlanSelection(true)} size='sm' text={"Assign Plan"} className='assign-plan-btn'></Button>
                     <Button variant='utility' size='sm' text={"Edit Plan"} className='edit-plan-btn'></Button>
                 </div>
             </div>
 
             <WorkoutSplitTable workoutSplit={workoutSplit} workoutPlan={workoutPlan}></WorkoutSplitTable>
+            {showPlanSelection && (
+                <PlanSelection onClose={() => setShowPlanSelection(false)} />
+            )}
         </>
     );
 }
@@ -130,7 +136,7 @@ export function ClientCard({ client }) {
 }
 
 export function WorkoutSplitTable({ workoutPlan, workoutSplit }) {
-    
+
     return (
         <div className='workoutSplit-container'>
 
@@ -157,7 +163,7 @@ export function WorkoutSplitTable({ workoutPlan, workoutSplit }) {
                                         <span className="muscle-group-cell">{split.muscleGroups}</span>
                                     )}
                                 </td>
-                                <td>
+                                <td className="view-exercise-btn-cell">
                                     {split.isRestDay ? (
                                         <span className="rest-dash">--</span>
                                     ) : (
@@ -172,4 +178,32 @@ export function WorkoutSplitTable({ workoutPlan, workoutSplit }) {
             </table>
         </div>
     );
+}
+
+function PlanSelection({ onClose, }) {
+    const[templates, setTemplates] = ([]);
+    useEffect(()=>{
+        const fetchTemplates = async () => {
+            console.log("button clicked")
+            try{
+                const templatesObj = await api.get('/workout/plan/templates')
+                console.log(templatesObj.data)
+            }catch{
+                console.log("failed to fetch workout templates")
+            }
+        }
+        fetchTemplates();
+    },[])
+    return (
+        <div>
+            select plan
+            <button onClick={onClose}>x</button>
+            <Button variant='utility' size='sm' text={"Create plan"}></Button>
+        </div>
+    );
+
+
+
+
+    
 }

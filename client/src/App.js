@@ -7,6 +7,7 @@ import Register from './pages/Register';
 import CoachDashboard from './pages/CoachDashboard';
 import ClientDetail from './pages/ClientDetail';
 import ClientHome from './pages/ClientHome';
+import CreatePlanPage from './pages/CreatePlan';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { token, role } = useAuth();
@@ -34,6 +35,7 @@ function App() {
         </ProtectedRoute>
       } />
       <Route path="client/:id" element = {<ClientDetail/>}/>
+      <Route path="/client/:clientId/plan/create" element={<CreatePlanPage />} />
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   );

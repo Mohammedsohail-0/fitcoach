@@ -4,6 +4,7 @@ function Button({ text, onClick, variant = 'primary', size = 'md', className = '
     <button
       className={`btn btn-${variant} btn-${size} ${className}`}
       disabled={disabled}
+      onClick={onClick}
     >
       {text}
     </button>
