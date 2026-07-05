@@ -22,7 +22,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      
+
       <Route path="/coach" element={
         <ProtectedRoute allowedRole="coach">
           <CoachDashboard />
@@ -34,9 +34,17 @@ function App() {
           <ClientHome />
         </ProtectedRoute>
       } />
-      <Route path="client/:id" element = {<ClientDetail/>}/>
-      <Route path="/client/:clientId/plan/create" element={<CreatePlanPage />} />
-      <Route path="*" element={<Navigate to="/login" />} />
+      <Route path="/client/:id" element={
+        <ProtectedRoute allowedRole="coach">
+          <ClientDetail />
+        </ProtectedRoute>
+      } />
+      <Route path="/client/:clientId/plan/create" element={
+        <ProtectedRoute allowedRole="coach">
+          <CreatePlanPage />
+        </ProtectedRoute> 
+      }/>
+        <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   );
 }

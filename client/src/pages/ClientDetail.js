@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import api from "../services/api";
 import './ClientDetail.css';
 import Button from "../components/Button"
+import {  useNavigate } from 'react-router-dom';
 
 
 function ClientDetail() {
@@ -73,7 +74,7 @@ function ClientDetail() {
                 </div>
             </div>
             <div className='btns-container1'>
-                <Button variant='utility' size='sm' text={"Assign Plan"} className='assign-plan-btn'></Button>
+               <Button variant='utility-primary' onClick={() => setShowPlanSelection(true)} size='sm' text={"Assign Plan"} className='assign-plan-btn'></Button>
                 <Button variant='utility' size='sm' text={"Edit Plan"} className='edit-plan-btn'></Button>
             </div>
 
@@ -83,8 +84,8 @@ function ClientDetail() {
                     <p className='workoutPlan'>{checkData(workoutPlan?.title)}</p>
                 </div>
                 <div className='btns-container2'>
-                    <Button variant='utility' onClick={() => setShowPlanSelection(true)} size='sm' text={"Assign Plan"} className='assign-plan-btn'></Button>
-                    <Button variant='utility' size='sm' text={"Edit Plan"} className='edit-plan-btn'></Button>
+                    <Button variant='utility-primary' onClick={() => setShowPlanSelection(true)} size='sm' text={"Assign Plan"} className='assign-plan-btn'></Button>
+                    <Button variant='utility-primary' size='sm' text={"Edit Plan"} className='edit-plan-btn'></Button>
                 </div>
             </div>
 
@@ -180,6 +181,7 @@ export function WorkoutSplitTable({ workoutPlan, workoutSplit }) {
     );
 }
 function PlanSelection({clientId, onClose }) {
+    const navigate = useNavigate();
     const [templates, setTemplates] = useState([]);
     const [selectedTemplate, setSelectedTemplate] = useState(null);
 
@@ -194,6 +196,9 @@ function PlanSelection({clientId, onClose }) {
         };
         fetchTemplates();
     }, []);
+    if(!templates){
+        return<div>loading...</div>
+    }
     async function assignPlan(templateId){
          try {
         await api.post(`/workout/plan/${templateId}/assign`, { clientId });
@@ -245,7 +250,7 @@ function PlanSelection({clientId, onClose }) {
                     <h2>OR</h2>
                     <hr />
                 </div>
-                <Button className='create-plan-btn' variant='utility-secondary' size='sm' text={"Create new plan"} />
+                <Button className='create-plan-btn' variant='utility-secondary' size='sm' text={"Create new plan"} onClick={()=>navigate(`/client/${clientId}/plan/create`)} />
             </div>
         </div>
     );
