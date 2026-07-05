@@ -1,97 +1,13 @@
 // client Id 6762aadb-be39-444e-95d9-c00567e1f2ac
+// coach Id eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ODM5YWMzYS0xY2Y4LTRiYjQtYWJkOC1iZTZmZDc1ZWViZmUiLCJyb2xlIjoiY29hY2giLCJpYXQiOjE3ODMyMzk3ODYsImV4cCI6MTc4Mzg0NDU4Nn0.5ZZIZiyqxPOxUBMQIUQSAxSiJ3M1P6FYqJ8fPK6NmyU
 // workout plan id 9ce998e7-19fd-4fc9-a0ef-ce3bbab2125d
 ###
-@baseUrl = http://localhost:3001
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ODM5YWMzYS0xY2Y4LTRiYjQtYWJkOC1iZTZmZDc1ZWViZmUiLCJyb2xlIjoiY29hY2giLCJpYXQiOjE3ODMwNjI5MzgsImV4cCI6MTc4MzY2NzczOH0.uabtYq9D-KwBqwdqopEF-mLQ_tirbgqZ8BqoPcudTfo
-@planId = 9ce998e7-19fd-4fc9-a0ef-ce3bbab2125d
-
-### Sunday - Rest
-POST {{baseUrl}}/workout/split
+POST  http://localhost:3001/workout/plan
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ODM5YWMzYS0xY2Y4LTRiYjQtYWJkOC1iZTZmZDc1ZWViZmUiLCJyb2xlIjoiY29hY2giLCJpYXQiOjE3ODMyMzk3ODYsImV4cCI6MTc4Mzg0NDU4Nn0.5ZZIZiyqxPOxUBMQIUQSAxSiJ3M1P6FYqJ8fPK6NmyU
 
 {
-  "planId": "{{planId}}",
-  "day": "SUNDAY",
-  "isRestDay": true,
-  "name": null,
-  "muscleGroups": null
-}
-
-### Monday - Push
-POST {{baseUrl}}/workout/split
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-  "planId": "{{planId}}",
-  "day": "MONDAY",
-  "isRestDay": false,
-  "name": "Push Day",
-  "muscleGroups": "Chest, Shoulders, Triceps"
-}
-
-### Tuesday - Pull
-POST {{baseUrl}}/workout/split
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-  "planId": "{{planId}}",
-  "day": "TUESDAY",
-  "isRestDay": false,
-  "name": "Pull Day",
-  "muscleGroups": "Back, Biceps"
-}
-
-### Wednesday - Legs
-POST {{baseUrl}}/workout/split
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-  "planId": "{{planId}}",
-  "day": "WEDNESDAY",
-  "isRestDay": false,
-  "name": "Leg Day",
-  "muscleGroups": "Quads, Hamstrings, Glutes, Calves"
-}
-
-### Thursday - Push
-POST {{baseUrl}}/workout/split
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-  "planId": "{{planId}}",
-  "day": "THURSDAY",
-  "isRestDay": false,
-  "name": "Push Day",
-  "muscleGroups": "Chest, Shoulders, Triceps"
-}
-
-### Friday - Pull
-POST {{baseUrl}}/workout/split
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-  "planId": "{{planId}}",
-  "day": "FRIDAY",
-  "isRestDay": false,
-  "name": "Pull Day",
-  "muscleGroups": "Back, Biceps"
-}
-
-### Saturday - Legs
-POST {{baseUrl}}/workout/split
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-  "planId": "{{planId}}",
-  "day": "SATURDAY",
-  "isRestDay": false,
-  "name": "Leg Day",
-  "muscleGroups": "Quads, Hamstrings, Glutes, Calves"
+  "title": "Upper Lower Split",
+  "description": "4-day split, intermediate strength focus",
+  "isTemplate": true
 }

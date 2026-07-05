@@ -180,30 +180,29 @@ export function WorkoutSplitTable({ workoutPlan, workoutSplit }) {
     );
 }
 
-function PlanSelection({ onClose, }) {
-    const[templates, setTemplates] = ([]);
-    useEffect(()=>{
+function PlanSelection({ onClose }) {
+    const [templates, setTemplates] = useState([]);
+    useEffect(() => {
         const fetchTemplates = async () => {
-            console.log("button clicked")
-            try{
-                const templatesObj = await api.get('/workout/plan/templates')
-                console.log(templatesObj.data)
-            }catch{
-                console.log("failed to fetch workout templates")
+            try {
+                const templatesObj = await api.get('/workout/plan/templates');
+                setTemplates(templatesObj.data);
+                console.log(templatesObj.data);
+            } catch {
+                console.log("failed to fetch workout templates");
             }
-        }
+        };
         fetchTemplates();
-    },[])
+    }, []);
     return (
         <div>
             select plan
             <button onClick={onClose}>x</button>
+            <div className='templates-container'>
+                tem
+
+            </div>
             <Button variant='utility' size='sm' text={"Create plan"}></Button>
         </div>
-    );
-
-
-
-
-    
+    ); 
 }

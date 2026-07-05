@@ -14,10 +14,9 @@ const router = express.Router();
 
 
 
-
-// Create workout plan
+// create plan
 router.post('/plan', authMiddleware, async (req, res) => {
-  const { clientId, title, description } = req.body;
+  const { clientId, title, description, isTemplate } = req.body;
   try {
     const coach = await prisma.coachProfile.findUnique({
       where: { userId: req.user.userId }
@@ -25,10 +24,11 @@ router.post('/plan', authMiddleware, async (req, res) => {
 
     const plan = await prisma.workoutPlan.create({
       data: {
-        coachId: coach.id,
-        clientId,
+        coach: { connect: { id: coach.id } },
         title,
-        description
+        description,
+        isTemplate,
+        ...(clientId && { client: { connect: { id: clientId } } })
       }
     });
 
@@ -40,18 +40,24 @@ router.post('/plan', authMiddleware, async (req, res) => {
 });
 
 
-
 // Get all template plans for the logged-in coach
 router.get('/plan/templates', authMiddleware, async (req, res) => {
   try {
+    const coach = await prisma.coachProfile.findUnique({
+      where: { userId: req.user.userId }
+    });
+
+    console.log('req.user.userId:', req.user.userId);
+    console.log('resolved coach:', coach);
+
     const plans = await prisma.workoutPlan.findMany({
       where: {
-        coachId: req.user.userId,
+        coachId: coach.id,
         isTemplate: true
       },
       include: { workoutSplits: { include: { exercises: true } } }
     });
-
+      console.log('plans found:', plans);
     res.json(plans);
   } catch (error) {
     console.error(error);
