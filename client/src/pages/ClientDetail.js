@@ -90,7 +90,7 @@ function ClientDetail() {
 
             <WorkoutSplitTable workoutSplit={workoutSplit} workoutPlan={workoutPlan}></WorkoutSplitTable>
             {showPlanSelection && (
-                <PlanSelection onClose={() => setShowPlanSelection(false)} />
+                <PlanSelection clientId={id} onClose={() => setShowPlanSelection(false)} />
             )}
         </>
     );
@@ -179,30 +179,73 @@ export function WorkoutSplitTable({ workoutPlan, workoutSplit }) {
         </div>
     );
 }
-
-function PlanSelection({ onClose }) {
+function PlanSelection({clientId, onClose }) {
     const [templates, setTemplates] = useState([]);
+    const [selectedTemplate, setSelectedTemplate] = useState(null);
+
     useEffect(() => {
         const fetchTemplates = async () => {
             try {
                 const templatesObj = await api.get('/workout/plan/templates');
                 setTemplates(templatesObj.data);
-                console.log(templatesObj.data);
             } catch {
                 console.log("failed to fetch workout templates");
             }
         };
         fetchTemplates();
     }, []);
+    async function assignPlan({templateId}){
+         try {
+        await api.post(`/workout/plan/${templateId}/assign`, { clientId });
+        onClose();
+    } catch (error) {
+        console.error('Failed to assign plan', error);
+    }
+    }
     return (
-        <div>
-            select plan
-            <button onClick={onClose}>x</button>
-            <div className='templates-container'>
-                tem
+        <div className='selection-overlay' onClick={onClose}>
+            <div className='selection-container' onClick={(e) => e.stopPropagation()}>
+                <div className='selection-header'>
+                    <h2>Select a Plan to assign</h2>
+                    <button className='close-btn' onClick={onClose}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
 
+                <div className='templates-container'>
+                    {templates.map((template) => (
+                        <div key={template.id} className={`template-row ${selectedTemplate === template.id ? 'selected' : ''}`}>
+                            <input
+                                type='radio'
+                                id={template.id}
+                                name='template-selection'
+                                value={template.id}
+                                checked={selectedTemplate === template.id}
+                                onChange={() => setSelectedTemplate(template.id)}
+                            />
+                            <label htmlFor={template.id}>{template.title}</label>
+
+                            {selectedTemplate === template.id && (
+                                <button className='confirmation-btn' onClick={() => assignPlan(template.id)}>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        <polyline points="12 5 19 12 12 19"></polyline>
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+                <div className="or-divider">
+                    <hr />
+                    <h2>OR</h2>
+                    <hr />
+                </div>
+                <Button className='create-plan-btn' variant='utility-secondary' size='sm' text={"Create new plan"} />
             </div>
-            <Button variant='utility' size='sm' text={"Create plan"}></Button>
         </div>
-    ); 
+    );
 }

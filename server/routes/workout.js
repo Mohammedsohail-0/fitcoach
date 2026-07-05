@@ -39,6 +39,63 @@ router.post('/plan', authMiddleware, async (req, res) => {
   }
 });
 
+// assign plan 
+router.post('/plan/:templateId/assign', authMiddleware, async (req, res) => {
+  const { clientId } = req.body;
+  try {
+    const template = await prisma.workoutPlan.findUnique({
+      where: { id: req.params.templateId },
+      include: { workoutSplits: { include: { exercises: true } } }
+    });
+
+    if (!template) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+
+    // deactivate client's current active plan, if any
+    await prisma.workoutPlan.updateMany({
+      where: { clientId, isActive: true },
+      data: { isActive: false }
+    });
+
+    // clone the template into a new plan for this client
+    const clonedPlan = await prisma.workoutPlan.create({
+      data: {
+        coach: { connect: { id: template.coachId } },
+        client: { connect: { id: clientId } },
+        title: template.title,
+        description: template.description,
+        isTemplate: false,
+        isActive: true,
+        clonedFrom: { connect: { id: template.id } },
+        workoutSplits: {
+          create: template.workoutSplits.map((split) => ({
+            day: split.day,
+            isRestDay: split.isRestDay,
+            name: split.name,
+            muscleGroups: split.muscleGroups,
+            exercises: {
+              create: split.exercises.map((ex) => ({
+                name: ex.name,
+                sets: ex.sets,
+                reps: ex.reps,
+                weight: ex.weight,
+                order: ex.order,
+                notes: ex.notes
+              }))
+            }
+          }))
+        }
+      },
+      include: { workoutSplits: { include: { exercises: true } } }
+    });
+
+    res.status(201).json(clonedPlan);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
 
 // Get all template plans for the logged-in coach
 router.get('/plan/templates', authMiddleware, async (req, res) => {

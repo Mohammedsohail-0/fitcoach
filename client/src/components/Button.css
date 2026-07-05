@@ -41,15 +41,26 @@
   color: black;
 }
 /*utility buttons*/
-.btn-utility {
+.btn-utility-primary {
   background: white;
   color: black;
 }
 
-.btn-utility:hover {
+.btn-utility-primary:hover {
   background: transparent;
   color: rgb(255, 255, 255);
   border: 2px solid white;
+}
+
+.btn-utility-secondary {
+  background: transparent;
+  color: rgb(255, 255, 255);
+  border: 2px solid white;
+}
+
+.btn-utility-secondary:hover {
+  background: white;
+  color: rgb(0, 0, 0);
 }
 
 /* Outline filled (was duplicate .btn-outline — renamed) */
