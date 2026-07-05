@@ -194,10 +194,11 @@ function PlanSelection({clientId, onClose }) {
         };
         fetchTemplates();
     }, []);
-    async function assignPlan({templateId}){
+    async function assignPlan(templateId){
          try {
         await api.post(`/workout/plan/${templateId}/assign`, { clientId });
         onClose();
+        window.location.reload()
     } catch (error) {
         console.error('Failed to assign plan', error);
     }

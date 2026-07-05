@@ -382,12 +382,11 @@
 }
 
 .template-row.selected {
-    border-color: #4ade80;
     background: rgba(74, 222, 128, 0.06);
 }
 
 .template-row input[type='radio'] {
-    accent-color: #4ade80;
+    accent-color: var(--accent);
     width: 16px;
     height: 16px;
     cursor: pointer;
@@ -402,9 +401,9 @@
 }
 
 .confirmation-btn {
-    background: transparent;
-    border: 1px solid var(--accent);
-    color: #4ade80;
+    background: var(--accent);
+    border: none;
+    color: #000000;
     border-radius: 50%;
     width: 32px;
     height: 32px;
