@@ -4,10 +4,10 @@
 ###
 POST  http://localhost:3001/workout/plan
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ODM5YWMzYS0xY2Y4LTRiYjQtYWJkOC1iZTZmZDc1ZWViZmUiLCJyb2xlIjoiY29hY2giLCJpYXQiOjE3ODMyMzk3ODYsImV4cCI6MTc4Mzg0NDU4Nn0.5ZZIZiyqxPOxUBMQIUQSAxSiJ3M1P6FYqJ8fPK6NmyU
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ODM5YWMzYS0xY2Y4LTRiYjQtYWJkOC1iZTZmZDc1ZWViZmUiLCJyb2xlIjoiY29hY2giLCJpYXQiOjE3ODMzMjk0NDIsImV4cCI6MTc4MzkzNDI0Mn0.Vp81w4_OtXhoV2OvlidKW47d7XRGyqNlLnlJhVdnbHk
 
 {
-  "title": "Upper Lower Split",
-  "description": "4-day split, intermediate strength focus",
+  "title": "Sample Split 1",
+  "description": "",
   "isTemplate": true
 }
