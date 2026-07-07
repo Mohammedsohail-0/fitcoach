@@ -6,7 +6,9 @@ import Button from "../components/Button"
 import { useNavigate } from 'react-router-dom';
 
 
+
 function CreatePlan() {
+    const [workoutPlanId, setWorkoutPlanId] = useState(null);
 
     return (
         <div className="create-plan">
@@ -16,13 +18,14 @@ function CreatePlan() {
                 </button>
                 <h1>Create Plan</h1>
             </div>
-            <WorkoutPlan></WorkoutPlan>
+            <WorkoutPlan workoutPlanId={workoutPlanId} setWorkoutPlanId={setWorkoutPlanId}></WorkoutPlan>
+            <WorkoutSplit workoutPlanId={workoutPlanId}></WorkoutSplit>
         </div>
     )
 }
 export default CreatePlan;
 
-export function WorkoutPlan() {
+export function WorkoutPlan({ workoutPlanId, setWorkoutPlanId }) {
     const [newPlan, setNewPlan] = useState({
         title: "",
         description: ""
@@ -45,4 +48,153 @@ export function WorkoutPlan() {
         </div>
     )
 
+}
+
+export function WorkoutSplit({ workoutPlanId }) {
+    const [splits, setSplits] = useState([
+        { planId: workoutPlanId, day: "Sunday", isRestDay: false, name: "", muscleGroups: [] },
+        { planId: workoutPlanId, day: "Monday", isRestDay: false, name: "", muscleGroups: [] },
+        { planId: workoutPlanId, day: "Tuesday", isRestDay: false, name: "", muscleGroups: [] },
+        { planId: workoutPlanId, day: "Wednesday", isRestDay: false, name: "", muscleGroups: [] },
+        { planId: workoutPlanId, day: "Thursday", isRestDay: false, name: "", muscleGroups: [] },
+        { planId: workoutPlanId, day: "Friday", isRestDay: false, name: "", muscleGroups: [] },
+        { planId: workoutPlanId, day: "Saturday", isRestDay: false, name: "", muscleGroups: [] },
+    ]);
+    console.log(splits)
+
+    const [selectedDay, setSelectedDay] = useState("Monday");
+    const [name, setName] = useState("");
+    const [muscleGroups, setMuscleGroups] = useState([]);
+    const [isRestDay, setIsRestDay] = useState(false);
+    const [muscleInput, setMuscleInput] = useState("");
+
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    const updateSplit = (day, updates) => {
+        setSplits(prev =>
+            prev.map(split =>
+                split.day === day ? { ...split, ...updates } : split
+            )
+        );
+    };
+
+    useEffect(() => {
+        const split = splits.find(s => s.day === selectedDay);
+        setName(split?.name || "");
+        setMuscleGroups(split?.muscleGroups || []);
+        setIsRestDay(split?.isRestDay || false);
+        setMuscleInput("");
+    }, [selectedDay]);
+
+    const handleNameChange = (e) => {
+        setName(e.target.value);
+        updateSplit(selectedDay, { name: e.target.value });
+    };
+
+    const handleToggleRestDay = () => {
+        const updated = !isRestDay;
+        setIsRestDay(updated);
+        updateSplit(selectedDay, { isRestDay: updated });
+    };
+
+    const handleAddMuscleGroup = () => {
+        if (!muscleInput.trim()) return;
+        const updatedGroups = [...muscleGroups, muscleInput.trim()];
+        setMuscleGroups(updatedGroups);
+        updateSplit(selectedDay, { muscleGroups: updatedGroups });
+        setMuscleInput("");
+    };
+
+    const handleRemoveMuscleGroup = (index) => {
+        const updatedGroups = muscleGroups.filter((_, i) => i !== index);
+        setMuscleGroups(updatedGroups);
+        updateSplit(selectedDay, { muscleGroups: updatedGroups });
+    };
+
+    return (
+        <div className="workout-split">
+            <h2>
+                <span>*</span>Plan muscles to train each day
+            </h2>
+
+            <div className="days-container">
+                {days.map((day) => (
+                    <span
+                        key={day}
+                        className={selectedDay === day ? "active" : ""}
+                        onClick={() => setSelectedDay(day)}
+                    >
+                        {day}
+                    </span>
+                ))}
+            </div>
+
+            <div className="split-header">
+                <h3>{selectedDay}</h3>
+                <div className="rest-toggle">
+                    <span className={isRestDay ? "rest-label active" : "rest-label"}>rest</span>
+                    <button
+                        type="button"
+                        role="switch"
+                        aria-checked={isRestDay}
+                        className={isRestDay ? "toggle-switch on" : "toggle-switch"}
+                        onClick={handleToggleRestDay}
+                    >
+                        <span className="toggle-knob" />
+                    </button>
+                </div>
+            </div>
+
+            {!isRestDay && (
+                <>
+                    <div className="name-container">
+                        <label htmlFor="name">Name: </label>
+                        <input
+                            id="name"
+                            value={name}
+                            onChange={handleNameChange}
+                            placeholder="e.g. Push Day"
+                        />
+                    </div>
+
+                    <div className="muscle-groups-input-container">
+                        <div className="muscle-groups">
+                            <ul>
+                                {muscleGroups.map((group, index) => (
+                                    <li key={index}>
+                                        {group}
+                                        <button
+                                            type="button"
+                                            className="remove-group"
+                                            onClick={() => handleRemoveMuscleGroup(index)}
+                                            aria-label={`Remove ${group}`}
+                                        >
+                                            ×
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        <div className="input-container">
+                            <input
+                                type="text"
+                                name="mgroup"
+                                id="mgroup"
+                                value={muscleInput}
+                                onChange={(e) => setMuscleInput(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddMuscleGroup()}
+                                placeholder="enter muscle group..."
+                            />
+                            <Button
+                                variant="utility"
+                                size="sm"
+                                text="Add"
+                                onClick={handleAddMuscleGroup}
+                            />
+                        </div>
+                    </div>
+                </>
+            )}
+        </div>
+    );
 }
