@@ -1,14 +1,61 @@
 import "./CreatePlan.css";
-import { useParams } from 'react-router-dom';
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import api from "../services/api";
-import Button from "../components/Button"
+import Button from "../components/Button";
 import { useNavigate } from 'react-router-dom';
 
-
-
 function CreatePlan() {
-    const [workoutPlanId, setWorkoutPlanId] = useState(null);
+    const navigate = useNavigate();
+
+    const [newPlan, setNewPlan] = useState({ title: "", description: "" });
+
+    const [splits, setSplits] = useState([
+        { day: "Sunday", isRestDay: false, name: "", muscleGroups: [] },
+        { day: "Monday", isRestDay: false, name: "", muscleGroups: [] },
+        { day: "Tuesday", isRestDay: false, name: "", muscleGroups: [] },
+        { day: "Wednesday", isRestDay: false, name: "", muscleGroups: [] },
+        { day: "Thursday", isRestDay: false, name: "", muscleGroups: [] },
+        { day: "Friday", isRestDay: false, name: "", muscleGroups: [] },
+        { day: "Saturday", isRestDay: false, name: "", muscleGroups: [] },
+    ]);
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState("");
+
+    const handleNext = async () => {
+        if (!newPlan.title.trim()) {
+            setError("Plan title is required");
+            return;
+        }
+
+        setIsSubmitting(true);
+        setError("");
+
+        try {
+            const planRes = await api.post('/workout/plan', {
+                title: newPlan.title,
+                description: newPlan.description,
+                isTemplate: true
+            });
+            const planId = planRes.data.id;
+
+            for (const split of splits) {
+                await api.post('/workout/split', {
+                    planId: planId,
+                    day: split.day,
+                    isRestDay: split.isRestDay,
+                    name: split.name,
+                    muscleGroups: split.muscleGroups.join(', ')
+                });
+            }
+
+        } catch (err) {
+            console.error("Server said:", err.response?.data);
+            setError("Something went wrong creating the plan. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <div className="create-plan">
@@ -18,18 +65,30 @@ function CreatePlan() {
                 </button>
                 <h1>Create Plan</h1>
             </div>
-            <WorkoutPlan workoutPlanId={workoutPlanId} setWorkoutPlanId={setWorkoutPlanId}></WorkoutPlan>
-            <WorkoutSplit workoutPlanId={workoutPlanId}></WorkoutSplit>
+
+            <WorkoutPlan newPlan={newPlan} setNewPlan={setNewPlan} />
+            <WorkoutSplit splits={splits} setSplits={setSplits} />
+
+            {error && <p className="error-text">{error}</p>}
+
+            <Button
+                variant="primary"
+                size="md"
+                text={isSubmitting ? "Creating..." : "Next"}
+                disabled={isSubmitting}
+                onClick={handleNext}
+                icon={
+                    <svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 -960 960 960" width="60px" fill="#000000">
+                        <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
+                    </svg>
+                }
+            />
         </div>
-    )
+    );
 }
 export default CreatePlan;
 
-export function WorkoutPlan({ workoutPlanId, setWorkoutPlanId }) {
-    const [newPlan, setNewPlan] = useState({
-        title: "",
-        description: ""
-    });
+export function WorkoutPlan({ newPlan, setNewPlan }) {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setNewPlan(prev => ({ ...prev, [name]: value }));
@@ -38,30 +97,19 @@ export function WorkoutPlan({ workoutPlanId, setWorkoutPlanId }) {
         <div className="workout-plan">
             <div className="title-container">
                 <label htmlFor="title"><span>* </span>Plan Title:</label>
-                <input type="text" name="title" onChange={handleChange} placeholder="Untitled Plan..."></input>
+                <input type="text" name="title" value={newPlan.title} onChange={handleChange} placeholder="Untitled Plan..." />
             </div>
             <textarea
                 name="description"
+                value={newPlan.description}
                 onChange={handleChange}
                 placeholder="description...">
             </textarea>
         </div>
-    )
-
+    );
 }
 
-export function WorkoutSplit({ workoutPlanId }) {
-    const [splits, setSplits] = useState([
-        { planId: workoutPlanId, day: "Sunday", isRestDay: false, name: "", muscleGroups: [] },
-        { planId: workoutPlanId, day: "Monday", isRestDay: false, name: "", muscleGroups: [] },
-        { planId: workoutPlanId, day: "Tuesday", isRestDay: false, name: "", muscleGroups: [] },
-        { planId: workoutPlanId, day: "Wednesday", isRestDay: false, name: "", muscleGroups: [] },
-        { planId: workoutPlanId, day: "Thursday", isRestDay: false, name: "", muscleGroups: [] },
-        { planId: workoutPlanId, day: "Friday", isRestDay: false, name: "", muscleGroups: [] },
-        { planId: workoutPlanId, day: "Saturday", isRestDay: false, name: "", muscleGroups: [] },
-    ]);
-    console.log(splits)
-
+export function WorkoutSplit({ splits, setSplits }) {
     const [selectedDay, setSelectedDay] = useState("Monday");
     const [name, setName] = useState("");
     const [muscleGroups, setMuscleGroups] = useState([]);
@@ -113,9 +161,7 @@ export function WorkoutSplit({ workoutPlanId }) {
 
     return (
         <div className="workout-split">
-            <h2>
-                <span>*</span>Plan muscles to train each day
-            </h2>
+            <h2><span>*</span>Plan muscles to train each day</h2>
 
             <div className="days-container">
                 {days.map((day) => (
