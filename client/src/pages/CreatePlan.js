@@ -161,86 +161,90 @@ export function WorkoutSplit({ splits, setSplits }) {
 
     return (
         <div className="workout-split">
-            <h2><span>*</span>Plan muscles to train each day</h2>
+            <div className="header">
+                <h2><span>*</span>Plan muscles to train each day</h2>
+            </div>
 
             <div className="days-container">
                 {days.map((day) => (
                     <span
                         key={day}
-                        className={selectedDay === day ? "active" : ""}
+                        className={`day-cell ${selectedDay === day ? "active" : ""}`}
                         onClick={() => setSelectedDay(day)}
                     >
                         {day}
                     </span>
                 ))}
             </div>
+            <div className="split-wraper">
 
-            <div className="split-header">
-                <h3>{selectedDay}</h3>
-                <div className="rest-toggle">
-                    <span className={isRestDay ? "rest-label active" : "rest-label"}>rest</span>
-                    <button
-                        type="button"
-                        role="switch"
-                        aria-checked={isRestDay}
-                        className={isRestDay ? "toggle-switch on" : "toggle-switch"}
-                        onClick={handleToggleRestDay}
-                    >
-                        <span className="toggle-knob" />
-                    </button>
+                <div className="split-header">
+                    <h3>{selectedDay}</h3>
+                    <div className="rest-toggle">
+                        <span className={isRestDay ? "rest-label active" : "rest-label"}>rest</span>
+                        <button
+                            type="button"
+                            role="switch"
+                            aria-checked={isRestDay}
+                            className={isRestDay ? "toggle-switch on" : "toggle-switch"}
+                            onClick={handleToggleRestDay}
+                        >
+                            <span className="toggle-knob" />
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            {!isRestDay && (
-                <>
-                    <div className="name-container">
-                        <label htmlFor="name">Name: </label>
-                        <input
-                            id="name"
-                            value={name}
-                            onChange={handleNameChange}
-                            placeholder="e.g. Push Day"
-                        />
-                    </div>
-
-                    <div className="muscle-groups-input-container">
-                        <div className="muscle-groups">
-                            <ul>
-                                {muscleGroups.map((group, index) => (
-                                    <li key={index}>
-                                        {group}
-                                        <button
-                                            type="button"
-                                            className="remove-group"
-                                            onClick={() => handleRemoveMuscleGroup(index)}
-                                            aria-label={`Remove ${group}`}
-                                        >
-                                            ×
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                        <div className="input-container">
+                {!isRestDay && (
+                    <>
+                        <div className="name-container">
+                            <label htmlFor="name">Name: </label>
                             <input
-                                type="text"
-                                name="mgroup"
-                                id="mgroup"
-                                value={muscleInput}
-                                onChange={(e) => setMuscleInput(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleAddMuscleGroup()}
-                                placeholder="enter muscle group..."
-                            />
-                            <Button
-                                variant="utility"
-                                size="sm"
-                                text="Add"
-                                onClick={handleAddMuscleGroup}
+                                id="name"
+                                value={name}
+                                onChange={handleNameChange}
+                                placeholder="e.g. Push Day"
                             />
                         </div>
-                    </div>
-                </>
-            )}
+
+                        <div className="muscle-groups-input-container">
+                            <div className="muscle-groups">
+                                <ul>
+                                    {muscleGroups.map((group, index) => (
+                                        <li key={index}>
+                                            {group}
+                                            <button
+                                                type="button"
+                                                className="remove-group"
+                                                onClick={() => handleRemoveMuscleGroup(index)}
+                                                aria-label={`Remove ${group}`}
+                                            >
+
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                            <div className="input-container">
+                                <input
+                                    type="text"
+                                    name="mgroup"
+                                    id="mgroup"
+                                    value={muscleInput}
+                                    onChange={(e) => setMuscleInput(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleAddMuscleGroup()}
+                                    placeholder="enter muscle group..."
+                                />
+                                <Button
+                                    variant="utility"
+                                    size="sm"
+                                    text="Add"
+                                    onClick={handleAddMuscleGroup}
+                                />
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     );
 }

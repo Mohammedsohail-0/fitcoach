@@ -66,3 +66,95 @@
 .workout-plan textarea:focus {
     border-color: var(--accent);
 }
+
+.workout-split{
+    .header span{
+        color: var(--accent);
+    }
+    .header h2{
+        font-family: var(--font-body);
+        font-weight: 500;
+        font-style: normal;
+        font-size: 1.5rem;
+    }
+
+}
+
+.days-container{
+    display: flex;
+    justify-content: space-around;
+    justify-self: center;
+    width: 80%;
+}
+
+.day-cell{
+    font-size: xx-large;
+    font-weight: 300;
+    color: var(--text-secondary);
+}
+
+.day-cell.active{
+    color: var(--text-primary);
+    font-weight: 500;
+    text-decoration: underline var(--accent);
+    text-underline-offset: 0.7rem;
+}
+
+.split-wraper{
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.split-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rest-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rest-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+}
+
+.rest-label.active {
+    color: #ff4d4d;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    border-radius: 999px;
+    background-color: var(--border-secondary);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.toggle-switch.on {
+    background-color: #ff4d4d;
+}
+
+.toggle-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    transition: transform 0.2s ease;
+}
+
+.toggle-switch.on .toggle-knob {
+    transform: translateX(20px);
+}
