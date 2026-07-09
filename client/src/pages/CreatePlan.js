@@ -179,7 +179,7 @@ export function WorkoutSplit({ splits, setSplits }) {
             <div className="split-wraper">
 
                 <div className="split-header">
-                    <h3>{selectedDay}</h3>
+                    <p>{selectedDay}</p>
                     <div className="rest-toggle">
                         <span className={isRestDay ? "rest-label active" : "rest-label"}>rest</span>
                         <button
@@ -202,7 +202,7 @@ export function WorkoutSplit({ splits, setSplits }) {
                                 id="name"
                                 value={name}
                                 onChange={handleNameChange}
-                                placeholder="e.g. Push Day"
+                                placeholder="e.g. Push Day, Chest Day, Leg Day..."
                             />
                         </div>
 
@@ -211,15 +211,19 @@ export function WorkoutSplit({ splits, setSplits }) {
                                 <ul>
                                     {muscleGroups.map((group, index) => (
                                         <li key={index}>
-                                            {group}
-                                            <button
-                                                type="button"
-                                                className="remove-group"
-                                                onClick={() => handleRemoveMuscleGroup(index)}
-                                                aria-label={`Remove ${group}`}
-                                            >
-
-                                            </button>
+                                            <span className="list-items">
+                                                <span className="muscle-name">{group}</span>
+                                                <button
+                                                    type="button"
+                                                    className="remove-group"
+                                                    onClick={() => handleRemoveMuscleGroup(index)}
+                                                    aria-label={`Remove ${group}`}
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#FF4444">
+                                                        <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
+                                                    </svg>
+                                                </button>
+                                            </span>
                                         </li>
                                     ))}
                                 </ul>
@@ -235,6 +239,7 @@ export function WorkoutSplit({ splits, setSplits }) {
                                     placeholder="enter muscle group..."
                                 />
                                 <Button
+                                    className="add-btn"
                                     variant="utility"
                                     size="sm"
                                     text="Add"
