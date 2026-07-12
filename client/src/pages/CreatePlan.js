@@ -116,8 +116,15 @@ export function WorkoutSplit({ splits, setSplits }) {
     const [isRestDay, setIsRestDay] = useState(false);
     const [muscleInput, setMuscleInput] = useState("");
 
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
+    const days = [
+        { full: "Sunday", short: "S" },
+        { full: "Monday", short: "M" },
+        { full: "Tuesday", short: "Tu" },
+        { full: "Wednesday", short: "W" },
+        { full: "Thursday", short: "Th" },
+        { full: "Friday", short: "F" },
+        { full: "Saturday", short: "Sa" },
+    ];
     const updateSplit = (day, updates) => {
         setSplits(prev =>
             prev.map(split =>
@@ -166,13 +173,10 @@ export function WorkoutSplit({ splits, setSplits }) {
             </div>
 
             <div className="days-container">
-                {days.map((day) => (
-                    <span
-                        key={day}
-                        className={`day-cell ${selectedDay === day ? "active" : ""}`}
-                        onClick={() => setSelectedDay(day)}
-                    >
-                        {day}
+                {days.map(({ full, short }) => (
+                    <span key={full} onClick={() => setSelectedDay(full)}>
+                        <span className={`day-full ${selectedDay === full ? "active" : ""}`}>{full}</span>
+                        <span className={`day-short ${selectedDay === full ? "active" : ""}`}>{short}</span>
                     </span>
                 ))}
             </div>
