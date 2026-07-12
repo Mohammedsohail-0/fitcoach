@@ -1,7 +1,13 @@
+/* ==========================================================================
+   Layout / Page
+   ========================================================================== */
 .create-plan {
-    padding: clamp(12px, 4vw, 20px);
+    padding: clamp(10px, 2vw, 20px);
 }
 
+/* ==========================================================================
+   Header (back button + title)
+   ========================================================================== */
 .header {
     display: flex;
     flex-direction: row;
@@ -20,6 +26,9 @@
     font-size: clamp(1.25rem, 4vw, 2rem);
 }
 
+/* ==========================================================================
+   Workout Plan (title + description)
+   ========================================================================== */
 .workout-plan {
     display: flex;
     flex-direction: column;
@@ -67,6 +76,9 @@
     border-color: var(--accent);
 }
 
+/* ==========================================================================
+   Workout Split (section wrapper + heading)
+   ========================================================================== */
 .workout-split {
     .header span {
         color: var(--accent);
@@ -76,10 +88,14 @@
         font-family: var(--font-body);
         font-weight: 500;
         font-style: normal;
-        font-size: 1.5rem;
+        font-size: clamp(1rem, 3vw, 1.25rem);
     }
 
 }
+
+/* ==========================================================================
+   Day Tabs (Sunday–Saturday / S–Sa)
+   ========================================================================== */
 .days-container {
     display: flex;
     justify-content: space-around;
@@ -111,52 +127,65 @@
 }
 
 @media (max-width: 720px) {
-    .day-full { display: none; }
-    .day-short { display: inline; }
+    .day-full {
+        display: none;
+    }
+
+    .day-short {
+        display: inline;
+        font-size: medium;
+    }
 }
 
-
-
+/* ==========================================================================
+   Split Card (wrapper for a single day's content)
+   ========================================================================== */
 .split-wraper {
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 20px;
-    margin-block: 5rem;
-    margin-inline:10rem ;
+    padding: clamp(12px, 3vw, 20px);
+    margin-block: clamp(2rem, 6vw, 5rem);
+    margin-inline: clamp(1rem, 8vw, 10rem);
 }
 
+/* --- Header: title + rest toggle, side by side, wraps on small screens --- */
 .split-header {
     display: flex;
-    position: relative;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
     width: 100%;
-    height: 50px;
+    min-height: 50px;
 }
 
 .split-header p {
-    font-size: 2rem;
+    font-size: clamp(1.4rem, 4vw, 2rem);
     font-weight: 600;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    
+    margin: 0;
 }
 
-.rest-toggle{
+.after-sbumission-header{
     display: flex;
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 10px;
+    flex-direction: row;
+    gap:10px;
+    .sub{
+        font-weight: 400;
+        font-style: italic;
+    }
+}
+
+/* --- Rest day toggle --- */
+.rest-toggle {
+    display: flex;
+    align-items: center;
     gap: 10px;
 }
 
-
 .rest-label {
     color: var(--text-secondary);
-    font-size: 1.2rem;
+    font-size: clamp(0.9rem, 2vw, 1.2rem);
     transition: color 0.2s ease;
-
 }
 
 .rest-label.active {
@@ -173,6 +202,7 @@
     padding: 0;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    flex-shrink: 0;
 }
 
 .toggle-switch.on {
@@ -194,63 +224,77 @@
     transform: translateX(20px);
 }
 
-.name-container{
+/* --- Name field --- */
+.name-container {
     display: flex;
-    flex-direction: row;
-    padding: 10px;
+    align-items: center;
     gap: 10px;
-    margin-inline: 1% ;
-    margin-top: 2rem;
+    padding: 10px;
+    margin-top: clamp(1rem, 4vw, 2rem);
 }
 
-.name-container input{
+.name-container label {
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+    white-space: nowrap;
+}
+
+.name-container input {
     background: transparent;
     border: 1px solid var(--border-secondary);
     border-radius: 50px;
-    padding: 10px;
-    width: 40%;
+    padding: 10px 16px;
+    flex: 1 1 auto;
+    min-width: 0;
     color: var(--text-primary);
 }
-
-.name-container label{
-    font-size: x-large;
+@media(max-width: 720px){
+    .name-container input{
+        font-size: 0.6rem;
+    }
 }
+
+/* --- Add muscle group input --- */
+.input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .input-container input {
     background: transparent;
     border: none;
     border-bottom: 1px solid var(--border);
-    padding: 10px;
-    width: 20%;
+    padding: 10px 4px;
+    flex: 1 1 auto;
+    min-width: 0;
     color: var(--text-primary);
-    margin-left: 7.5%;
     outline: none;
     transition: border-color 0.2s ease;
-    font-size: 1.3rem;
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
 }
 
 .input-container input:focus {
     border-bottom-color: var(--accent);
 }
 
-.input-container{
-    display: flex;
-}
-.input-container button{
-    width: 8%;
-    height: 90%;
+.input-container button {
+    flex-shrink: 0;
+    width: clamp(4rem, 20vw, 10rem);
 }
 
-.muscle-groups{
-    display: flex;
-    padding: 20px;
-    margin-left: 5%;
-}.muscle-groups ul {
+/* --- Muscle group list --- */
+.muscle-groups {
+    padding: clamp(10px, 3vw, 20px);
+}
+
+.muscle-groups ul {
     list-style-type: circle;
     padding-left: 20px;
+    margin: 0;
 }
 
 .muscle-groups li {
-    font-size: 1.8rem;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
 }
 
 .list-items {
@@ -258,7 +302,6 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    width: 100%;
 }
 
 .muscle-groups button {
@@ -267,4 +310,13 @@
     cursor: pointer;
     line-height: 1;
     padding: 0;
+    flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Error text
+   ========================================================================== */
+.error-text{
+    justify-self:center;
+    color: var(--error);
 }

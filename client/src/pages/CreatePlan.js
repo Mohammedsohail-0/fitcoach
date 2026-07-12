@@ -4,10 +4,13 @@ import api from "../services/api";
 import Button from "../components/Button";
 import { useNavigate } from 'react-router-dom';
 
+
 function CreatePlan() {
     const navigate = useNavigate();
 
     const [newPlan, setNewPlan] = useState({ title: "", description: "" });
+    const [selectedDay, setSelectedDay] = useState("Monday");
+    const [splitIds, setSplitIds] = useState([]);
 
     const [splits, setSplits] = useState([
         { day: "Sunday", isRestDay: false, name: "", muscleGroups: [] },
@@ -20,14 +23,17 @@ function CreatePlan() {
     ]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState("");
 
-    const handleNext = async () => {
-        if (!newPlan.title.trim()) {
-            setError("Plan title is required");
-            return;
-        }
+    // Derived validation — recalculated on every render, no extra state needed
+    const missingDays = splits
+        .filter(split => !split.isRestDay && (!split.muscleGroups || split.muscleGroups.length === 0))
+        .map(split => split.day);
 
+    const isFormValid = newPlan.title.trim().length > 0 && missingDays.length === 0;
+
+    const handleNext = async () => {
         setIsSubmitting(true);
         setError("");
 
@@ -38,17 +44,21 @@ function CreatePlan() {
                 isTemplate: true
             });
             const planId = planRes.data.id;
+            const createdSplitIds = [];
 
             for (const split of splits) {
-                await api.post('/workout/split', {
+                const splitRes = await api.post('/workout/split', {
                     planId: planId,
                     day: split.day,
                     isRestDay: split.isRestDay,
                     name: split.name,
                     muscleGroups: split.muscleGroups.join(', ')
                 });
-            }
 
+                createdSplitIds.push({ day: split.day, id: splitRes.data.id });
+            }
+            setSplitIds(createdSplitIds);
+            setSubmitted(true);
         } catch (err) {
             console.error("Server said:", err.response?.data);
             setError("Something went wrong creating the plan. Please try again.");
@@ -61,32 +71,49 @@ function CreatePlan() {
         <div className="create-plan">
             <div className="header">
                 <button className="back-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 -960 960 960" width="60px" fill="#ffffff"><path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 -960 960 960" width="60px" fill="#ffffff">
+                        <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
+                    </svg>
                 </button>
                 <h1>Create Plan</h1>
             </div>
 
-            <WorkoutPlan newPlan={newPlan} setNewPlan={setNewPlan} />
-            <WorkoutSplit splits={splits} setSplits={setSplits} />
+            {!submitted &&
+                <WorkoutPlan newPlan={newPlan} setNewPlan={setNewPlan} />
+            }
 
-            {error && <p className="error-text">{error}</p>}
+            <WorkoutSplit splits={splits} submitted={submitted} setSplits={setSplits} selectedDay={selectedDay} setSelectedDay={setSelectedDay} />
 
-            <Button
-                variant="primary"
-                size="md"
-                text={isSubmitting ? "Creating..." : "Next"}
-                disabled={isSubmitting}
-                onClick={handleNext}
-                icon={
-                    <svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 -960 960 960" width="60px" fill="#000000">
-                        <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
-                    </svg>
-                }
-            />
+            {!isFormValid && !submitted && (
+                <p className="error-text">
+                    {!newPlan.title.trim() && "Add a plan title. "}
+                </p>
+            )}
+            {error && <p className="error-text">*{error}</p>}
+
+            {isFormValid && !submitted && (
+                <Button
+                    variant="primary"
+                    size="md"
+                    text={isSubmitting ? "Creating..." : "Next"}
+                    disabled={isSubmitting}
+                    onClick={handleNext}
+                    icon={
+                        <svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 -960 960 960" width="60px" fill="#000000">
+                            <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
+                        </svg>
+                    }
+                />
+            )}
+
+            {submitted &&
+                <ExerciseSection selectedDay={selectedDay} splitIds={splitIds}></ExerciseSection>
+            }
         </div>
     );
 }
 export default CreatePlan;
+
 
 export function WorkoutPlan({ newPlan, setNewPlan }) {
     const handleChange = (e) => {
@@ -109,8 +136,8 @@ export function WorkoutPlan({ newPlan, setNewPlan }) {
     );
 }
 
-export function WorkoutSplit({ splits, setSplits }) {
-    const [selectedDay, setSelectedDay] = useState("Monday");
+export function WorkoutSplit({ splits, setSplits, submitted, selectedDay, setSelectedDay }) {
+
     const [name, setName] = useState("");
     const [muscleGroups, setMuscleGroups] = useState([]);
     const [isRestDay, setIsRestDay] = useState(false);
@@ -125,6 +152,7 @@ export function WorkoutSplit({ splits, setSplits }) {
         { full: "Friday", short: "F" },
         { full: "Saturday", short: "Sa" },
     ];
+
     const updateSplit = (day, updates) => {
         setSplits(prev =>
             prev.map(split =>
@@ -139,7 +167,7 @@ export function WorkoutSplit({ splits, setSplits }) {
         setMuscleGroups(split?.muscleGroups || []);
         setIsRestDay(split?.isRestDay || false);
         setMuscleInput("");
-    }, [selectedDay]);
+    }, [selectedDay, splits]);
 
     const handleNameChange = (e) => {
         setName(e.target.value);
@@ -168,9 +196,11 @@ export function WorkoutSplit({ splits, setSplits }) {
 
     return (
         <div className="workout-split">
-            <div className="header">
-                <h2><span>*</span>Plan muscles to train each day</h2>
-            </div>
+            {!submitted &&
+                <div className="header">
+                    <h2><span>*</span>Plan muscles to train each day</h2>
+                </div>
+            }
 
             <div className="days-container">
                 {days.map(({ full, short }) => (
@@ -180,35 +210,55 @@ export function WorkoutSplit({ splits, setSplits }) {
                     </span>
                 ))}
             </div>
-            <div className="split-wraper">
 
+            <div className="split-wraper">
                 <div className="split-header">
-                    <p>{selectedDay}</p>
-                    <div className="rest-toggle">
-                        <span className={isRestDay ? "rest-label active" : "rest-label"}>rest</span>
-                        <button
-                            type="button"
-                            role="switch"
-                            aria-checked={isRestDay}
-                            className={isRestDay ? "toggle-switch on" : "toggle-switch"}
-                            onClick={handleToggleRestDay}
-                        >
-                            <span className="toggle-knob" />
-                        </button>
-                    </div>
+                    {submitted &&
+                        <div className="after-sbumission-header">
+
+                            {splits.find((split) => split.day === selectedDay)?.name ? (
+                                <>
+                                    <p className="main">{splits.find((split) => split.day === selectedDay)?.name}</p>
+                                    <p className="sub">({selectedDay})</p>
+                                </>
+                            ) : (
+                                <p className="main">{selectedDay}</p>
+                            )}
+
+                        </div>
+                    }
+                    {!submitted &&
+                        <p>{selectedDay}</p>
+                    }
+                    {!submitted &&
+                        <div className="rest-toggle">
+                            <span className={isRestDay ? "rest-label active" : "rest-label"}>rest</span>
+                            <button
+                                type="button"
+                                role="switch"
+                                aria-checked={isRestDay}
+                                className={isRestDay ? "toggle-switch on" : "toggle-switch"}
+                                onClick={handleToggleRestDay}
+                            >
+                                <span className="toggle-knob" />
+                            </button>
+                        </div>
+                    }
                 </div>
 
                 {!isRestDay && (
                     <>
-                        <div className="name-container">
-                            <label htmlFor="name">Name: </label>
-                            <input
-                                id="name"
-                                value={name}
-                                onChange={handleNameChange}
-                                placeholder="e.g. Push Day, Chest Day, Leg Day..."
-                            />
-                        </div>
+                        {!submitted &&
+                            <div className="name-container">
+                                <label htmlFor="name">Name: </label>
+                                <input
+                                    id="name"
+                                    value={name}
+                                    onChange={handleNameChange}
+                                    placeholder="e.g. Push Day, Chest Day, Leg Day..."
+                                />
+                            </div>
+                        }
 
                         <div className="muscle-groups-input-container">
                             <div className="muscle-groups">
@@ -217,43 +267,57 @@ export function WorkoutSplit({ splits, setSplits }) {
                                         <li key={index}>
                                             <span className="list-items">
                                                 <span className="muscle-name">{group}</span>
-                                                <button
-                                                    type="button"
-                                                    className="remove-group"
-                                                    onClick={() => handleRemoveMuscleGroup(index)}
-                                                    aria-label={`Remove ${group}`}
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#FF4444">
-                                                        <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
-                                                    </svg>
-                                                </button>
+                                                {!submitted &&
+                                                    <button
+                                                        type="button"
+                                                        className="remove-group"
+                                                        onClick={() => handleRemoveMuscleGroup(index)}
+                                                        aria-label={`Remove ${group}`}
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#FF4444">
+                                                            <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
+                                                        </svg>
+                                                    </button>
+                                                }
                                             </span>
                                         </li>
                                     ))}
                                 </ul>
                             </div>
-                            <div className="input-container">
-                                <input
-                                    type="text"
-                                    name="mgroup"
-                                    id="mgroup"
-                                    value={muscleInput}
-                                    onChange={(e) => setMuscleInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleAddMuscleGroup()}
-                                    placeholder="enter muscle group..."
-                                />
-                                <Button
-                                    className="add-btn"
-                                    variant="utility"
-                                    size="sm"
-                                    text="Add"
-                                    onClick={handleAddMuscleGroup}
-                                />
-                            </div>
+
+                            {!submitted &&
+                                <div className="input-container">
+                                    <input
+                                        type="text"
+                                        name="mgroup"
+                                        id="mgroup"
+                                        value={muscleInput}
+                                        onChange={(e) => setMuscleInput(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleAddMuscleGroup()}
+                                        placeholder="enter muscle group..."
+                                    />
+                                    <Button
+                                        className="add-btn"
+                                        variant="utility"
+                                        size="sm"
+                                        text="Add"
+                                        onClick={handleAddMuscleGroup}
+                                    />
+                                </div>
+                            }
                         </div>
                     </>
                 )}
             </div>
         </div>
     );
+}
+
+export function ExerciseSection({ selectedDay, splits }) {
+
+    return (
+        <div className="exercise-section">
+
+        </div>
+    )
 }

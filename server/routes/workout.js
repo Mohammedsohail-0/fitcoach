@@ -291,7 +291,19 @@ router.get('/exercise/:splitId', authMiddleware, async (req, res) => {
     res.status(500).json({ error: 'Something went wrong' });
   }
 });
-
+//Get single split
+router.get('/split/one/:id', authMiddleware, async (req, res) => {
+    try {
+        const split = await prisma.workoutSplit.findUnique({
+            where: { id: req.params.id },
+            include: { exercises: true }
+        });
+        if (!split) return res.status(404).json({ error: 'Split not found' });
+        res.json(split);
+    } catch (error) {
+        res.status(500).json({ error: 'Something went wrong' });
+    }
+});
 // Update exercise
 router.put('/exercise/:id', authMiddleware, async (req, res) => {
   const { name, sets, reps, weight, order, notes } = req.body;
