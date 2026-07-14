@@ -62,8 +62,18 @@
   background: white;
   color: rgb(0, 0, 0);
 }
-
-/* Outline filled (was duplicate .btn-outline — renamed) */
+.btn-remove{
+  font-weight: 400;
+  background: transparent;
+  color: var(--error);
+  border: 1px dotted var(--error);
+}
+.btn-remove:hover{
+  background-color: var(--error);
+  color: #000;
+  border: none;
+}
+/*Outline filled (was duplicate .btn-outline — renamed) */
 .btn-outline-filled {
   background: var(--accent);
   border: 1px solid var(--accent);

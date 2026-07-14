@@ -35,7 +35,7 @@ function CreatePlan() {
         .map(split => split.day);
 
     const isFormValid = newPlan.title.trim().length > 0 && missingDays.length === 0;
-   
+
 
     const handleNext = async () => {
         setIsSubmitting(true);
@@ -64,7 +64,7 @@ function CreatePlan() {
 
             setSplitIds(createdSplitIds);
             setSubmitted(true);
-           
+
 
         } catch (err) {
             console.error("Server said:", err.response?.data);
@@ -116,6 +116,7 @@ function CreatePlan() {
             {submitted &&
                 <ExerciseSection selectedDay={selectedDay} splitIds={splitIds}></ExerciseSection>
             }
+            <ExerciseCard></ExerciseCard>
         </div>
     );
 }
@@ -319,32 +320,18 @@ export function WorkoutSplit({ splits, setSplits, submitted, selectedDay, setSel
         </div>
     );
 }
-
 export function ExerciseSection({ selectedDay, splitIds }) {
     const [currentSplit, setCurrentSplit] = useState(null);
-    const currentSplitId = splitIds.find(s => s.day === selectedDay)?.id;
-    const [exercise, setExercise] = useState([
-        {splitId: currentSplitId, name: "", set: "", reps:"", weight:"", order:""}
-        
-    ])
-    const [Wexercises, setWExercises] = useState([
-        {day: "sunday", exercise: exercise},
-        {day: "Monday", exercise: exercise},
-        {day: "Tuesday", exercise: exercise},
-        {day: "Wednesday", exercise: exercise},
-        {day: "Thursday", exercise: exercise},
-        {day: "Friday", exercise: exercise},
-        {day: "saturday", exercise: exercise}
-    ])
+    const [targetMuscle, setTargetMuscle] = useState("");
 
+
+    const currentSplitId = splitIds.find(s => s.day === selectedDay)?.id;
     const muscleGroups = currentSplit?.muscleGroups
         ? currentSplit.muscleGroups.split(', ').filter(Boolean)
         : [];
 
     useEffect(() => {
-        if (!currentSplitId) {
-            return;
-        }
+        if (!currentSplitId) return;
         const fetchSplit = async () => {
             try {
                 const splitObj = await api.get(`/workout/split/one/${currentSplitId}`);
@@ -352,43 +339,99 @@ export function ExerciseSection({ selectedDay, splitIds }) {
             } catch (err) {
                 console.error(err);
             }
-        }
+        };
         fetchSplit();
-    }, [currentSplitId])
-
+    }, [currentSplitId]);
 
     return (
         <div className="exercise-section">
             <div className="target-muscle-wraper">
-                <label htmlFor="target-muscle"></label>
-                <select name="target-muscle">
+                <label htmlFor="target-muscle">Target Muscle:</label>
+                <select
+                    name="target-muscle"
+                    value={targetMuscle}
+                    onChange={(e) => setTargetMuscle(e.target.value)}
+                >
                     {muscleGroups.map((g) => (
-                        <option key={g}>{g}</option>
+                        <option key={g} value={g}>{g}</option>
                     ))}
                 </select>
             </div>
-            <div className="exercise-card">
-                <div className="exercise-card-header">
-                    
-                </div>
-                <div className="set-container">
-                    <div className="set-no">
-                        
-                    </div>
-                    <div className="weight">
-
-                    </div>
-                    <div className="reps">
-
-                    </div>
-                    <div className="remove-set-btn">
-
-                    </div>
-
-                </div>
-            </div>
             <div>
-                <Button variant="utility" text={"Add Exercise"}></Button>
+                
+                <Button variant="utility" text="Add Exercise" />
+            </div>
+        </div>
+    );
+}
+
+export function ExerciseCard() {
+
+
+    function SetCard({ set, onRemove, onChange }) {
+        return (
+            <div className="set-card">
+                <input type="number" value={set.setNumber} readOnly />
+                <input
+                    type="number"
+                    value={set.weight}
+                    onChange={(e) => onChange('weight', e.target.value)}
+                />
+                <input
+                    type="number"
+                    value={set.reps}
+                    onChange={(e) => onChange('reps', e.target.value)}
+                />
+                <button className="remove-set-btn" onClick={onRemove}>
+                    {<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="red"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" /></svg>}
+                </button>
+            </div>
+        );
+    }
+    const [sets, setSets] = useState([
+        { id: crypto.randomUUID(), setNumber: 1, reps: '', weight: '' }
+    ]);
+
+    const addSet = () => {
+        setSets(prev => [
+            ...prev,
+            { id: crypto.randomUUID(), setNumber: prev.length + 1, reps: '', weight: '' }
+        ]);
+    };
+
+    const removeSet = (id) => {
+        setSets(prev => {
+            const filtered = prev.filter(s => s.id !== id);
+            // re-number remaining sets so setNumber stays sequential
+            return filtered.map((s, i) => ({ ...s, setNumber: i + 1 }));
+        });
+    };
+
+    const updateSet = (id, field, value) => {
+        setSets(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s));
+    };
+    return (
+        <div className="exercise-card">
+            <div className="exercise-card-header">
+                <div className="input-wraper">
+                    <label htmlFor="exercise-name">Exercise Name: </label>
+                    <input name="exercise-name" placeholder="eg. Bench press"></input>
+                </div>
+                <div>
+                    <Button className="remove-btn" variant="remove" text={"remove"} size="sm" ></Button>
+                </div>
+                <div>
+                    {sets.map((s) => (
+                        <SetCard
+                            key={s.id}
+                            set={s}
+                            onRemove={() => removeSet(s.id)}
+                            onChange={(field, value) => updateSet(s.id, field, value)}
+                        />
+                    ))}
+                </div>
+                <Button variant="utility-secondary" text={"+ Add Set"} size="sm" onClick={addSet} ></Button>
+
             </div>
         </div>
     )
