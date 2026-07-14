@@ -76,18 +76,25 @@ model WorkoutSplit {
   exercises     Exercise[]
   workoutLogs   WorkoutLog[]
 }
-
 model Exercise {
   id             String        @id @default(uuid())
   workoutSplitId String
   name           String
-  sets           Int
-  reps           Int
-  weight         Float?
+  muscleGroup    String
   order          Int
   notes          String?
-  workoutSplit   WorkoutSplit  @relation(fields: [workoutSplitId], references: [id],  onDelete: Cascade)
+  workoutSplit   WorkoutSplit  @relation(fields: [workoutSplitId], references: [id], onDelete: Cascade)
+  exerciseSets   ExerciseSet[]
   exerciseLogs   ExerciseLog[]
+}
+
+model ExerciseSet {
+  id         String   @id @default(uuid())
+  exerciseId String
+  setNumber  Int
+  reps       Int
+  weight     Float?
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
 }
 
 model WorkoutLog {

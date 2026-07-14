@@ -5,6 +5,9 @@ import Button from "../components/Button";
 import { useNavigate } from 'react-router-dom';
 
 
+
+
+
 function CreatePlan() {
     const navigate = useNavigate();
 
@@ -32,6 +35,7 @@ function CreatePlan() {
         .map(split => split.day);
 
     const isFormValid = newPlan.title.trim().length > 0 && missingDays.length === 0;
+   
 
     const handleNext = async () => {
         setIsSubmitting(true);
@@ -57,8 +61,11 @@ function CreatePlan() {
 
                 createdSplitIds.push({ day: split.day, id: splitRes.data.id });
             }
+
             setSplitIds(createdSplitIds);
             setSubmitted(true);
+           
+
         } catch (err) {
             console.error("Server said:", err.response?.data);
             setError("Something went wrong creating the plan. Please try again.");
@@ -313,11 +320,76 @@ export function WorkoutSplit({ splits, setSplits, submitted, selectedDay, setSel
     );
 }
 
-export function ExerciseSection({ selectedDay, splits }) {
+export function ExerciseSection({ selectedDay, splitIds }) {
+    const [currentSplit, setCurrentSplit] = useState(null);
+    const currentSplitId = splitIds.find(s => s.day === selectedDay)?.id;
+    const [exercise, setExercise] = useState([
+        {splitId: currentSplitId, name: "", set: "", reps:"", weight:"", order:""}
+        
+    ])
+    const [Wexercises, setWExercises] = useState([
+        {day: "sunday", exercise: exercise},
+        {day: "Monday", exercise: exercise},
+        {day: "Tuesday", exercise: exercise},
+        {day: "Wednesday", exercise: exercise},
+        {day: "Thursday", exercise: exercise},
+        {day: "Friday", exercise: exercise},
+        {day: "saturday", exercise: exercise}
+    ])
+
+    const muscleGroups = currentSplit?.muscleGroups
+        ? currentSplit.muscleGroups.split(', ').filter(Boolean)
+        : [];
+
+    useEffect(() => {
+        if (!currentSplitId) {
+            return;
+        }
+        const fetchSplit = async () => {
+            try {
+                const splitObj = await api.get(`/workout/split/one/${currentSplitId}`);
+                setCurrentSplit(splitObj.data);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        fetchSplit();
+    }, [currentSplitId])
+
 
     return (
         <div className="exercise-section">
+            <div className="target-muscle-wraper">
+                <label htmlFor="target-muscle"></label>
+                <select name="target-muscle">
+                    {muscleGroups.map((g) => (
+                        <option key={g}>{g}</option>
+                    ))}
+                </select>
+            </div>
+            <div className="exercise-card">
+                <div className="exercise-card-header">
+                    
+                </div>
+                <div className="set-container">
+                    <div className="set-no">
+                        
+                    </div>
+                    <div className="weight">
 
+                    </div>
+                    <div className="reps">
+
+                    </div>
+                    <div className="remove-set-btn">
+
+                    </div>
+
+                </div>
+            </div>
+            <div>
+                <Button variant="utility" text={"Add Exercise"}></Button>
+            </div>
         </div>
     )
 }
