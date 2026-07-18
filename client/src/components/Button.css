@@ -66,7 +66,7 @@
   font-weight: 400;
   background: transparent;
   color: var(--error);
-  border: 1px dotted var(--error);
+  border: 2px dotted var(--error);
 }
 .btn-remove:hover{
   background-color: var(--error);

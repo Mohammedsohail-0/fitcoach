@@ -165,11 +165,12 @@
     margin: 0;
 }
 
-.after-sbumission-header{
+.after-sbumission-header {
     display: flex;
     flex-direction: row;
-    gap:10px;
-    .sub{
+    gap: 10px;
+
+    .sub {
         font-weight: 400;
         font-style: italic;
     }
@@ -247,8 +248,9 @@
     min-width: 0;
     color: var(--text-primary);
 }
-@media(max-width: 720px){
-    .name-container input{
+
+@media(max-width: 720px) {
+    .name-container input {
         font-size: 0.6rem;
     }
 }
@@ -316,8 +318,194 @@
 /* ==========================================================================
    Error text
    ========================================================================== */
-.error-text{
-    justify-self:center;
+.error-text {
+    justify-self: center;
     color: var(--error);
 }
 
+
+
+/*============================================================================
+  Exercise Card
+============================================================================*/
+.exercise-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-inline: clamp(2%, 8%, 8%);
+  padding: clamp(16px, 4vw, 24px);
+  background-color: var(--bg);
+  color: var(--text-primary);
+}
+
+.exercise-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: clamp(10px, 4vw, 20px);
+}
+
+.exercise-name-input-wraper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(10px, 3vw, 16px);
+  flex: 1 1 auto;
+}
+
+.exercise-name-input-wraper label {
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  white-space: nowrap;
+}
+
+.exercise-name-input-wraper input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 4px;
+  flex: 1 1 150px;
+  min-width: 0;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s ease;
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+}
+
+.exercise-name-input-wraper input:focus {
+  border-color: var(--text-primary);
+}
+
+/* Pill-style remove button (top right, dotted red) */
+.remove-exercise-btn {
+  background: transparent;
+  color: var(--error);
+  border: 1.5px dashed var(--error);
+  border-radius: 999px;
+  padding: 6px 18px;
+  font-size: clamp(0.75rem, 2vw, 0.9rem);
+  cursor: pointer;
+  white-space: nowrap;
+  order: 2;
+}
+
+@media (max-width: 720px) {
+  .exercise-card-header {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .remove-exercise-btn {
+    align-self: flex-end;
+    margin-bottom: 4px;
+  }
+}
+
+/*============================================================================
+  Set Cards
+============================================================================*/
+.set-card-container {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 3vw, 16px);
+  margin-top: clamp(1rem, 4vw, 1.5rem);
+}
+
+.label-wraper,
+.set-card-wraper {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr clamp(28px, 8vw, 40px);
+  align-items: center;
+  gap: clamp(6px, 2vw, 12px);
+  width: 100%;
+}
+
+.label-wraper {
+  padding-inline: clamp(6px, 3vw, 20px);
+}
+
+.label-wraper label {
+  color: var(--text-secondary);
+  font-size: clamp(0.75rem, 2vw, 0.9rem);
+  letter-spacing: 0.05em;
+}
+
+.set-card-wraper {
+  background-color: var(--surface);
+  border-radius: 12px;
+  padding: clamp(10px, 2.5vw, 14px) clamp(10px, 4vw, 20px);
+}
+
+.set-card-input-wraper {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.set-card-input-wraper input {
+  background-color: var(--bg);
+  border: 0.5px solid var(--border-secondary);
+  border-radius: 6px;
+  width: 100%;
+  min-width: 0;
+  padding: clamp(8px, 2vw, 12px);
+  color: var(--text-primary);
+  box-sizing: border-box;
+  font-size: clamp(0.85rem, 2.5vw, 1rem);
+  text-align: center;
+}
+
+/* First "SET" column shows a disabled numbered box, not a free input */
+.set-card-input-wraper input:disabled {
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+.remove-set-btn {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: clamp(1.1rem, 4vw, 1.4rem);
+  line-height: 1;
+  cursor: pointer;
+  justify-self: center;
+  padding: 4px;
+}
+
+.remove-set-btn:hover {
+  color: var(--error);
+}
+
+/*============================================================================
+  Add Set Button
+============================================================================*/
+.add-set-btn {
+  align-self: center;
+  margin-top: clamp(1rem, 4vw, 1.5rem);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--text-primary);
+  border-radius: 999px;
+  padding: clamp(8px, 2vw, 12px) clamp(20px, 6vw, 28px);
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.add-set-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/*============================================================================
+  Mobile tweaks
+============================================================================*/
+@media (max-width: 480px) {
+  .label-wraper span,
+  .set-card-input-wraper input {
+    font-size: 0.75rem;
+  }
+}

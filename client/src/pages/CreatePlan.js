@@ -116,7 +116,7 @@ function CreatePlan() {
             {submitted &&
                 <ExerciseSection selectedDay={selectedDay} splitIds={splitIds}></ExerciseSection>
             }
-            <ExerciseCard></ExerciseCard>
+          
         </div>
     );
 }
@@ -358,7 +358,7 @@ export function ExerciseSection({ selectedDay, splitIds }) {
                 </select>
             </div>
             <div>
-                
+
                 <Button variant="utility" text="Add Exercise" />
             </div>
         </div>
@@ -371,20 +371,40 @@ export function ExerciseCard() {
     function SetCard({ set, onRemove, onChange }) {
         return (
             <div className="set-card">
-                <input type="number" value={set.setNumber} readOnly />
-                <input
-                    type="number"
-                    value={set.weight}
-                    onChange={(e) => onChange('weight', e.target.value)}
-                />
-                <input
-                    type="number"
-                    value={set.reps}
-                    onChange={(e) => onChange('reps', e.target.value)}
-                />
-                <button className="remove-set-btn" onClick={onRemove}>
-                    {<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="red"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" /></svg>}
-                </button>
+                <div className="label-wraper">
+
+                    <label htmlFor="set-number">SET</label>
+                    <label htmlFor="weight">KG</label>
+                    <label htmlFor="reps">REPS</label>
+                </div>
+                <div className="set-card-wraper">
+
+                    <div className="set-card-input-wraper">
+                        <input type="number" name="set-number" value={set.setNumber} readOnly />
+                    </div>
+
+                    <div className="set-card-input-wraper">
+                        <input
+                            name="weight"
+                            type="number"
+                            value={set.weight}
+                            onChange={(e) => onChange('weight', e.target.value)}
+                        />
+                    </div>
+
+                    <div className="set-card-input-wraper">
+                        <input
+                            name="reps"
+                            type="number"
+                            value={set.reps}
+                            onChange={(e) => onChange('reps', e.target.value)}
+                        />
+                    </div>
+
+                    <button className="remove-set-btn" alt={"remove set"} onClick={onRemove}>
+                        {<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="red"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" /></svg>}
+                    </button>
+                </div>
             </div>
         );
     }
@@ -413,26 +433,26 @@ export function ExerciseCard() {
     return (
         <div className="exercise-card">
             <div className="exercise-card-header">
-                <div className="input-wraper">
-                    <label htmlFor="exercise-name">Exercise Name: </label>
+                <div className="exercise-name-input-wraper">
+                    <label htmlFor="exercise-name">Exercise Name : </label>
                     <input name="exercise-name" placeholder="eg. Bench press"></input>
                 </div>
                 <div>
-                    <Button className="remove-btn" variant="remove" text={"remove"} size="sm" ></Button>
+                    <Button className="remove-exercise-btn" variant="remove" text={"remove"} size="sm" ></Button>
                 </div>
-                <div>
-                    {sets.map((s) => (
-                        <SetCard
-                            key={s.id}
-                            set={s}
-                            onRemove={() => removeSet(s.id)}
-                            onChange={(field, value) => updateSet(s.id, field, value)}
-                        />
-                    ))}
-                </div>
-                <Button variant="utility-secondary" text={"+ Add Set"} size="sm" onClick={addSet} ></Button>
 
             </div>
+            <div className="set-card-container">
+                {sets.map((s) => (
+                    <SetCard
+                        key={s.id}
+                        set={s}
+                        onRemove={() => removeSet(s.id)}
+                        onChange={(field, value) => updateSet(s.id, field, value)}
+                    />
+                ))}
+            </div>
+            <Button variant="utility-secondary" className="add-set-btn" text={"+ Add Set"} size="sm" onClick={addSet} ></Button>
         </div>
     )
 }
