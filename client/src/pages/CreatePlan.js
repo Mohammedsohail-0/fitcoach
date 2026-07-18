@@ -14,6 +14,7 @@ function CreatePlan() {
     const [newPlan, setNewPlan] = useState({ title: "", description: "" });
     const [selectedDay, setSelectedDay] = useState("Monday");
     const [splitIds, setSplitIds] = useState([]);
+    const [splitDrafts, setSplitDrafts] = useState({});
 
     const [splits, setSplits] = useState([
         { day: "Sunday", isRestDay: false, name: "", muscleGroups: [] },
@@ -114,9 +115,14 @@ function CreatePlan() {
             )}
 
             {submitted &&
-                <ExerciseSection selectedDay={selectedDay} splitIds={splitIds}></ExerciseSection>
+                <ExerciseSection
+                    selectedDay={selectedDay}
+                    splitIds={splitIds}
+                    splitDrafts={splitDrafts}
+                    setSplitDrafts={setSplitDrafts}
+                />
             }
-          
+
         </div>
     );
 }
@@ -320,28 +326,82 @@ export function WorkoutSplit({ splits, setSplits, submitted, selectedDay, setSel
         </div>
     );
 }
-export function ExerciseSection({ selectedDay, splitIds }) {
-    const [currentSplit, setCurrentSplit] = useState(null);
+
+export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDrafts }) {
     const [targetMuscle, setTargetMuscle] = useState("");
-
-
     const currentSplitId = splitIds.find(s => s.day === selectedDay)?.id;
+    const currentSplit = currentSplitId ? splitDrafts[currentSplitId] : null;
+
     const muscleGroups = currentSplit?.muscleGroups
         ? currentSplit.muscleGroups.split(', ').filter(Boolean)
         : [];
 
     useEffect(() => {
         if (!currentSplitId) return;
+        // already fetched/cached — don't refetch and clobber local edits
+        if (splitDrafts[currentSplitId]) return;
+
         const fetchSplit = async () => {
             try {
-                const splitObj = await api.get(`/workout/split/one/${currentSplitId}`);
-                setCurrentSplit(splitObj.data);
+                const res = await api.get(`/workout/split/one/${currentSplitId}`);
+                const data = { ...res.data, exercises: res.data.exercises || [] };
+                setSplitDrafts(prev => ({ ...prev, [currentSplitId]: data }));
             } catch (err) {
                 console.error(err);
             }
         };
         fetchSplit();
     }, [currentSplitId]);
+
+    useEffect(() => {
+        if (muscleGroups.length && !muscleGroups.includes(targetMuscle)) {
+            setTargetMuscle(muscleGroups[0]);
+        }
+    }, [muscleGroups.join(','), currentSplitId]); // reset selection sanity when day changes too
+
+    // generic helper: update this split's draft
+    const updateSplit = (updater) => {
+        setSplitDrafts(prev => ({
+            ...prev,
+            [currentSplitId]: updater(prev[currentSplitId]),
+        }));
+    };
+
+    const exercisesForTarget = (currentSplit?.exercises || [])
+        .filter(e => e.muscleGroup === targetMuscle);
+
+    const addExercise = () => {
+        if (!targetMuscle) return;
+        const newExercise = {
+            id: crypto.randomUUID(),
+            name: '',
+            muscleGroup: targetMuscle,
+            order: exercisesForTarget.length,
+            sets: [{ id: crypto.randomUUID(), setNumber: 1, reps: '', weight: '' }],
+        };
+        updateSplit(split => ({
+            ...split,
+            exercises: [...(split.exercises || []), newExercise],
+        }));
+    };
+
+    const removeExercise = (exerciseId) => {
+        updateSplit(split => ({
+            ...split,
+            exercises: split.exercises.filter(e => e.id !== exerciseId),
+        }));
+    };
+
+    const updateExercise = (exerciseId, exerciseUpdater) => {
+        updateSplit(split => ({
+            ...split,
+            exercises: split.exercises.map(e =>
+                e.id === exerciseId ? exerciseUpdater(e) : e
+            ),
+        }));
+    };
+
+    if (!currentSplit) return null; // or a loading state
 
     return (
         <div className="exercise-section">
@@ -357,93 +417,113 @@ export function ExerciseSection({ selectedDay, splitIds }) {
                     ))}
                 </select>
             </div>
-            <div>
 
-                <Button variant="utility" text="Add Exercise" />
+            {exercisesForTarget.map((exercise) => (
+                <ExerciseCard
+                    key={exercise.id}
+                    exercise={exercise}
+                    onRemove={() => removeExercise(exercise.id)}
+                    onUpdate={(updater) => updateExercise(exercise.id, updater)}
+                />
+            ))}
+
+            <Button variant="utility" text="+ Add Exercise" onClick={addExercise} />
+        </div>
+    );
+}
+
+
+function SetCard({ set, onRemove, onChange }) {
+    return (
+        <div className="set-card">
+            <div className="label-wraper">
+                <label htmlFor="set-number">SET</label>
+                <label htmlFor="weight">KG</label>
+                <label htmlFor="reps">REPS</label>
+            </div>
+            <div className="set-card-wraper">
+                <div className="set-card-input-wraper">
+                    <input type="number" name="set-number" value={set.setNumber} readOnly />
+                </div>
+                <div className="set-card-input-wraper">
+                    <input
+                        name="weight"
+                        type="number"
+                        value={set.weight}
+                        onChange={(e) => onChange('weight', e.target.value)}
+                    />
+                </div>
+                <div className="set-card-input-wraper">
+                    <input
+                        name="reps"
+                        type="number"
+                        value={set.reps}
+                        onChange={(e) => onChange('reps', e.target.value)}
+                    />
+                </div>
+                <button className="remove-set-btn" onClick={onRemove}>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="red">
+                        <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+                    </svg>
+                </button>
             </div>
         </div>
     );
 }
 
-export function ExerciseCard() {
-
-
-    function SetCard({ set, onRemove, onChange }) {
-        return (
-            <div className="set-card">
-                <div className="label-wraper">
-
-                    <label htmlFor="set-number">SET</label>
-                    <label htmlFor="weight">KG</label>
-                    <label htmlFor="reps">REPS</label>
-                </div>
-                <div className="set-card-wraper">
-
-                    <div className="set-card-input-wraper">
-                        <input type="number" name="set-number" value={set.setNumber} readOnly />
-                    </div>
-
-                    <div className="set-card-input-wraper">
-                        <input
-                            name="weight"
-                            type="number"
-                            value={set.weight}
-                            onChange={(e) => onChange('weight', e.target.value)}
-                        />
-                    </div>
-
-                    <div className="set-card-input-wraper">
-                        <input
-                            name="reps"
-                            type="number"
-                            value={set.reps}
-                            onChange={(e) => onChange('reps', e.target.value)}
-                        />
-                    </div>
-
-                    <button className="remove-set-btn" alt={"remove set"} onClick={onRemove}>
-                        {<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="red"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" /></svg>}
-                    </button>
-                </div>
-            </div>
-        );
-    }
-    const [sets, setSets] = useState([
-        { id: crypto.randomUUID(), setNumber: 1, reps: '', weight: '' }
-    ]);
-
+export function ExerciseCard({ exercise, onRemove, onUpdate }) {
     const addSet = () => {
-        setSets(prev => [
+        onUpdate(prev => ({
             ...prev,
-            { id: crypto.randomUUID(), setNumber: prev.length + 1, reps: '', weight: '' }
-        ]);
+            sets: [
+                ...prev.sets,
+                { id: crypto.randomUUID(), setNumber: prev.sets.length + 1, reps: '', weight: '' }
+            ],
+        }));
     };
 
-    const removeSet = (id) => {
-        setSets(prev => {
-            const filtered = prev.filter(s => s.id !== id);
-            // re-number remaining sets so setNumber stays sequential
-            return filtered.map((s, i) => ({ ...s, setNumber: i + 1 }));
+    const removeSet = (setId) => {
+        onUpdate(prev => {
+            const filtered = prev.sets.filter(s => s.id !== setId);
+            return { ...prev, sets: filtered.map((s, i) => ({ ...s, setNumber: i + 1 })) };
         });
     };
 
-    const updateSet = (id, field, value) => {
-        setSets(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s));
+    const updateSet = (setId, field, value) => {
+        onUpdate(prev => ({
+            ...prev,
+            sets: prev.sets.map(s => s.id === setId ? { ...s, [field]: value } : s),
+        }));
     };
+
+    const updateName = (value) => {
+        onUpdate(prev => ({ ...prev, name: value }));
+    };
+
     return (
         <div className="exercise-card">
             <div className="exercise-card-header">
                 <div className="exercise-name-input-wraper">
-                    <label htmlFor="exercise-name">Exercise Name : </label>
-                    <input name="exercise-name" placeholder="eg. Bench press"></input>
+                    <label htmlFor="exercise-name">Exercise Name :</label>
+                    <input
+                        required
+                        name="exercise-name"
+                        placeholder="eg. Bench press"
+                        value={exercise.name}
+                        onChange={(e) => updateName(e.target.value)}
+                        
+                    />
                 </div>
                 <div>
-                    <Button className="remove-exercise-btn" variant="remove" text={"remove"} size="sm" ></Button>
+                    <button className="remove-exercise-btn" onClick={onRemove}>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="32px" viewBox="0 -960 960 960" width="32px" fill="#FF4444">
+                            <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
+                        </svg>
+                    </button>
                 </div>
-
             </div>
             <div className="set-card-container">
-                {sets.map((s) => (
+                {exercise.sets.map((s) => (
                     <SetCard
                         key={s.id}
                         set={s}
@@ -452,7 +532,7 @@ export function ExerciseCard() {
                     />
                 ))}
             </div>
-            <Button variant="utility-secondary" className="add-set-btn" text={"+ Add Set"} size="sm" onClick={addSet} ></Button>
+            <Button variant="utility-secondary" className="add-set-btn" text="+ Add Set" size="sm" onClick={addSet} />
         </div>
-    )
+    );
 }
