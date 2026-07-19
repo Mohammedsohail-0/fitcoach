@@ -74,12 +74,16 @@ router.post('/plan/:templateId/assign', authMiddleware, async (req, res) => {
             isRestDay: split.isRestDay,
             name: split.name,
             muscleGroups: split.muscleGroups,
+            clonedFromId: split.id,
             exercises: {
-              create: split.exercises.map((ex) => ({
+              create: split.exercises
+                .filter((ex) => !ex.isArchived)
+                .map((ex) => ({
                 name: ex.name,
                 muscleGroup: ex.muscleGroup,
                 order: ex.order,
                 notes: ex.notes,
+                clonedFromId: ex.id,
                 exerciseSets: {
                   create: ex.exerciseSets.map((s) => ({
                     setNumber: s.setNumber,

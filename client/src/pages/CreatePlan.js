@@ -346,22 +346,43 @@ export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDr
         ? currentSplit.muscleGroups.split(', ').filter(Boolean)
         : [];
 
-    useEffect(() => {
-        if (!currentSplitId) return;
-        // already fetched/cached — don't refetch and clobber local edits
-        if (splitDrafts[currentSplitId]) return;
+    // Seed one blank exercise per muscle group that doesn't have any yet.
+    // Runs whenever a split is first fetched — keeps the coach from staring
+    // at an empty "Target Muscle" screen with nothing to fill in.
+    const seedDefaultExercises = (data) => {
+        if (data.isRestDay) return data;
+        const groups = (data.muscleGroups || '').split(', ').filter(Boolean);
+        const existingGroups = new Set((data.exercises || []).map(e => e.muscleGroup));
+        const defaults = groups
+            .filter(g => !existingGroups.has(g))
+            .map(g => ({
+                id: crypto.randomUUID(),
+                name: '',
+                muscleGroup: g,
+                order: 0,
+                sets: [{ id: crypto.randomUUID(), setNumber: 1, reps: '', weight: '' }],
+            }));
+        return { ...data, exercises: [...(data.exercises || []), ...defaults] };
+    };
 
-        const fetchSplit = async () => {
+    // Fetch every day's split up front (not just the one currently shown).
+    // Needed so "Finish Plan" can validate ALL days, not only the one
+    // the coach has actually clicked into.
+    useEffect(() => {
+        const toFetch = splitIds.filter(({ id }) => !splitDrafts[id]);
+        if (!toFetch.length) return;
+
+        toFetch.forEach(async ({ id }) => {
             try {
-                const res = await api.get(`/workout/split/one/${currentSplitId}`);
-                const data = { ...res.data, exercises: res.data.exercises || [] };
-                setSplitDrafts(prev => ({ ...prev, [currentSplitId]: data }));
+                const res = await api.get(`/workout/split/one/${id}`);
+                const raw = { ...res.data, exercises: res.data.exercises || [] };
+                const seeded = seedDefaultExercises(raw);
+                setSplitDrafts(prev => (prev[id] ? prev : { ...prev, [id]: seeded }));
             } catch (err) {
                 console.error(err);
             }
-        };
-        fetchSplit();
-    }, [currentSplitId]);
+        });
+    }, [splitIds.map(s => s.id).join(',')]);
 
     useEffect(() => {
         if (muscleGroups.length && !muscleGroups.includes(targetMuscle)) {
@@ -369,12 +390,20 @@ export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDr
         }
     }, [muscleGroups.join(','), currentSplitId]); // reset selection sanity when day changes too
 
-    // generic helper: update this split's draft
+    // generic helper: update this split's draft. Any edit invalidates the
+    // "Saved" checkmark for this day, since the server no longer matches
+    // what's on screen until the coach saves again.
     const updateSplit = (updater) => {
         setSplitDrafts(prev => ({
             ...prev,
             [currentSplitId]: updater(prev[currentSplitId]),
         }));
+        setSavedDays(prev => {
+            if (!prev[currentSplitId]) return prev;
+            const next = { ...prev };
+            delete next[currentSplitId];
+            return next;
+        });
     };
 
     const exercisesForTarget = (currentSplit?.exercises || [])
@@ -470,7 +499,23 @@ export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDr
         }
     };
 
-    if (!currentSplit) return null; // or a loading state
+    // A muscle group only "counts" once it has an exercise with a real name —
+    // the auto-seeded blank one doesn't satisfy this, so the button can't be
+    // gamed by just leaving the default exercise untouched.
+    const hasNamedExercise = (draft, group) =>
+        (draft?.exercises || []).some(e => e.muscleGroup === group && e.name?.trim());
+
+    const currentDayIncomplete = muscleGroups.some(g => !hasNamedExercise(currentSplit, g));
+
+    const allDraftsLoaded = splitIds.every(({ id }) => splitDrafts[id]);
+    const planIncomplete = !allDraftsLoaded || splitIds.some(({ id }) => {
+        const draft = splitDrafts[id];
+        if (!draft || draft.isRestDay) return false; // rest days are exempt
+        const groups = (draft.muscleGroups || '').split(', ').filter(Boolean);
+        return groups.some(g => !hasNamedExercise(draft, g));
+    });
+
+    if (!currentSplit) return <p className="loading-text">Loading day...</p>;
 
     return (
         <div className="exercise-section">
@@ -499,6 +544,12 @@ export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDr
             <Button variant="utility" text="+ Add Exercise" onClick={addExercise} />
 
             {finishError && <p className="error-text">*{finishError}</p>}
+            {currentDayIncomplete && (
+                <p className="hint-text">Add at least one named exercise per muscle group to save this day.</p>
+            )}
+            {!currentDayIncomplete && planIncomplete && (
+                <p className="hint-text">Finish every non-rest day before finishing the plan.</p>
+            )}
 
             <div className="exercise-section-actions">
                 <Button
@@ -511,14 +562,14 @@ export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDr
                                 ? "Saved ✓"
                                 : "Save this day"
                     }
-                    disabled={savingDay === currentSplitId}
+                    disabled={savingDay === currentSplitId || currentDayIncomplete}
                     onClick={handleSaveDay}
                 />
                 <Button
                     variant="primary"
                     size="md"
                     text={isFinishing ? "Finishing..." : "Finish Plan"}
-                    disabled={isFinishing}
+                    disabled={isFinishing || planIncomplete}
                     onClick={handleFinishPlan}
                 />
             </div>

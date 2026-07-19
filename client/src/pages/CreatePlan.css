@@ -567,3 +567,17 @@
         font-size: 0.75rem;
     }
 }
+/*============================================================================
+  Hint / loading text
+============================================================================*/
+.hint-text {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin: 6px 0 0;
+}
+
+.loading-text {
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 40px 0;
+}

@@ -72,6 +72,9 @@ model WorkoutSplit {
   isRestDay     Boolean       @default(false)
   name          String?
   muscleGroups  String?
+  clonedFromId  String?
+  clonedFrom    WorkoutSplit?   @relation("SplitClones", fields: [clonedFromId], references: [id])
+  clones        WorkoutSplit[]  @relation("SplitClones")
   workoutPlan   WorkoutPlan   @relation(fields: [workoutPlanId], references: [id])
   exercises     Exercise[]
   workoutLogs   WorkoutLog[]
@@ -83,6 +86,10 @@ model Exercise {
   muscleGroup    String
   order          Int
   notes          String?
+  isArchived     Boolean       @default(false)
+  clonedFromId   String?
+  clonedFrom     Exercise?     @relation("ExerciseClones", fields: [clonedFromId], references: [id])
+  clones         Exercise[]    @relation("ExerciseClones")
   workoutSplit   WorkoutSplit  @relation(fields: [workoutSplitId], references: [id], onDelete: Cascade)
   exerciseSets   ExerciseSet[]
   exerciseLogs   ExerciseLog[]
