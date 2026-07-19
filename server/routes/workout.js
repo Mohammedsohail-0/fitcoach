@@ -152,6 +152,233 @@ router.get('/activePlan/:clientId', authMiddleware, async (req, res) => {
 });
 
 
+// Get a single plan by id (template or assigned) — used by EditPlan
+router.get('/plan/:id', authMiddleware, async (req, res) => {
+  try {
+    const plan = await prisma.workoutPlan.findUnique({
+      where: { id: req.params.id },
+      include: {
+        workoutSplits: {
+          include: {
+            exercises: {
+              where: { isArchived: false },
+              include: { exerciseSets: true }
+            }
+          }
+        }
+      }
+    });
+
+    if (!plan) return res.status(404).json({ error: 'Plan not found' });
+
+    res.json(plan);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
+// How many active client plans currently trace back to this template —
+// used to decide whether Save shows the "push to clients" dialog at all.
+router.get('/plan/:id/active-clones-count', authMiddleware, async (req, res) => {
+  try {
+    const count = await prisma.workoutPlan.count({
+      where: { clonedFromId: req.params.id, isActive: true }
+    });
+    res.json({ count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
+// Push a template's current state into every active client plan cloned
+// from it. Diff/merge, not delete-recreate — matches rows via clonedFromId
+// so logs (which reference exercise/split ids) never get orphaned.
+// Best-effort: one client failing doesn't roll back the others.
+router.post('/plan/:templateId/push', authMiddleware, async (req, res) => {
+  try {
+    const template = await prisma.workoutPlan.findUnique({
+      where: { id: req.params.templateId },
+      include: {
+        workoutSplits: {
+          where: { isArchived: false },
+          include: { exercises: { where: { isArchived: false }, include: { exerciseSets: true } } }
+        }
+      }
+    });
+
+    if (!template) return res.status(404).json({ error: 'Template not found' });
+
+    const clones = await prisma.workoutPlan.findMany({
+      where: { clonedFromId: template.id, isActive: true },
+      include: {
+        client: { select: { name: true } },
+        workoutSplits: {
+          include: {
+            workoutLogs: { select: { id: true } },
+            exercises: { include: { exerciseSets: true, exerciseLogs: { select: { id: true } } } }
+          }
+        }
+      }
+    });
+
+    const results = { updated: 0, total: clones.length, failed: [] };
+
+    for (const clientPlan of clones) {
+      try {
+        await pushTemplateToClientPlan(template, clientPlan);
+        results.updated += 1;
+      } catch (err) {
+        console.error(`Push failed for client plan ${clientPlan.id}:`, err);
+        results.failed.push({
+          clientId: clientPlan.clientId,
+          clientName: clientPlan.client?.name || 'Unknown client',
+          reason: 'Could not update this client\'s plan. Please check it manually.'
+        });
+      }
+    }
+
+    res.json(results);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong pushing to clients' });
+  }
+});
+
+// Diff/merge one client's clone against the template's current state.
+// Runs inside a single transaction so one client's update is all-or-nothing,
+// even though the overall push across all clients is best-effort.
+async function pushTemplateToClientPlan(template, clientPlan) {
+  await prisma.$transaction(async (tx) => {
+    // sync plan-level fields
+    await tx.workoutPlan.update({
+      where: { id: clientPlan.id },
+      data: { title: template.title, description: template.description }
+    });
+
+    const templateSplitIds = new Set(template.workoutSplits.map(s => s.id));
+
+    // splits removed from the template entirely
+    for (const clientSplit of clientPlan.workoutSplits) {
+      if (clientSplit.isArchived) continue;
+      if (!clientSplit.clonedFromId || templateSplitIds.has(clientSplit.clonedFromId)) continue;
+
+      const hasLogs = clientSplit.workoutLogs?.length > 0 ||
+        clientSplit.exercises.some(e => e.exerciseLogs?.length > 0);
+
+      if (hasLogs) {
+        await tx.workoutSplit.update({ where: { id: clientSplit.id }, data: { isArchived: true } });
+      } else {
+        await tx.workoutSplit.delete({ where: { id: clientSplit.id } });
+      }
+    }
+
+    // splits present on the template
+    for (const templateSplit of template.workoutSplits) {
+      const clientSplit = clientPlan.workoutSplits.find(
+        s => s.clonedFromId === templateSplit.id && !s.isArchived
+      );
+
+      if (!clientSplit) {
+        // day was added to the template after this client was cloned
+        await tx.workoutSplit.create({
+          data: {
+            workoutPlanId: clientPlan.id,
+            day: templateSplit.day,
+            isRestDay: templateSplit.isRestDay,
+            name: templateSplit.name,
+            muscleGroups: templateSplit.muscleGroups,
+            clonedFromId: templateSplit.id,
+            exercises: {
+              create: templateSplit.exercises.map(ex => ({
+                name: ex.name,
+                muscleGroup: ex.muscleGroup,
+                order: ex.order,
+                notes: ex.notes,
+                clonedFromId: ex.id,
+                exerciseSets: {
+                  create: ex.exerciseSets.map(s => ({ setNumber: s.setNumber, reps: s.reps, weight: s.weight }))
+                }
+              }))
+            }
+          }
+        });
+        continue;
+      }
+
+      await tx.workoutSplit.update({
+        where: { id: clientSplit.id },
+        data: {
+          day: templateSplit.day,
+          isRestDay: templateSplit.isRestDay,
+          name: templateSplit.name,
+          muscleGroups: templateSplit.muscleGroups
+        }
+      });
+
+      const templateExerciseIds = new Set(templateSplit.exercises.map(e => e.id));
+
+      // exercises removed from this day on the template
+      for (const clientEx of clientSplit.exercises) {
+        if (clientEx.isArchived) continue;
+        if (!clientEx.clonedFromId || templateExerciseIds.has(clientEx.clonedFromId)) continue;
+
+        if (clientEx.exerciseLogs?.length > 0) {
+          await tx.exercise.update({ where: { id: clientEx.id }, data: { isArchived: true } });
+        } else {
+          await tx.exercise.delete({ where: { id: clientEx.id } });
+        }
+      }
+
+      // exercises present on this day on the template
+      for (const templateEx of templateSplit.exercises) {
+        const clientEx = clientSplit.exercises.find(
+          e => e.clonedFromId === templateEx.id && !e.isArchived
+        );
+
+        if (!clientEx) {
+          await tx.exercise.create({
+            data: {
+              workoutSplitId: clientSplit.id,
+              name: templateEx.name,
+              muscleGroup: templateEx.muscleGroup,
+              order: templateEx.order,
+              notes: templateEx.notes,
+              clonedFromId: templateEx.id,
+              exerciseSets: {
+                create: templateEx.exerciseSets.map(s => ({ setNumber: s.setNumber, reps: s.reps, weight: s.weight }))
+              }
+            }
+          });
+          continue;
+        }
+
+        await tx.exercise.update({
+          where: { id: clientEx.id },
+          data: {
+            name: templateEx.name,
+            muscleGroup: templateEx.muscleGroup,
+            order: templateEx.order,
+            notes: templateEx.notes
+          }
+        });
+
+        // sets have no logs pointing at them directly — safe to wipe/recreate
+        await tx.exerciseSet.deleteMany({ where: { exerciseId: clientEx.id } });
+        await tx.exerciseSet.createMany({
+          data: templateEx.exerciseSets.map(s => ({
+            exerciseId: clientEx.id,
+            setNumber: s.setNumber,
+            reps: s.reps,
+            weight: s.weight
+          }))
+        });
+      }
+    }
+  });
+}
+
 // Update plan
 router.put('/plan/:id', authMiddleware, async (req, res) => {
   const { title, description, isActive } = req.body;
@@ -252,10 +479,27 @@ router.put('/split/:id', authMiddleware, async (req, res) => {
 // Delete split
 router.delete('/split/:id', authMiddleware, async (req, res) => {
   try {
-    await prisma.workoutSplit.delete({
-      where: { id: req.params.id }
+    const split = await prisma.workoutSplit.findUnique({
+      where: { id: req.params.id },
+      include: {
+        workoutLogs: { select: { id: true } },
+        exercises: { include: { exerciseLogs: { select: { id: true } } } }
+      }
     });
 
+    if (!split) return res.status(404).json({ error: 'Split not found' });
+
+    const hasLogs = split.workoutLogs.length > 0 || split.exercises.some(e => e.exerciseLogs.length > 0);
+
+    if (hasLogs) {
+      const archived = await prisma.workoutSplit.update({
+        where: { id: req.params.id },
+        data: { isArchived: true }
+      });
+      return res.json({ message: 'Day has logged history, archived instead of deleted', split: archived });
+    }
+
+    await prisma.workoutSplit.delete({ where: { id: req.params.id } });
     res.json({ message: 'Split deleted successfully' });
   } catch (error) {
     console.error(error);
@@ -398,10 +642,22 @@ router.put('/exercise/:id', authMiddleware, async (req, res) => {
 // Delete exercise
 router.delete('/exercise/:id', authMiddleware, async (req, res) => {
   try {
-    await prisma.exercise.delete({
-      where: { id: req.params.id }
+    const exercise = await prisma.exercise.findUnique({
+      where: { id: req.params.id },
+      include: { exerciseLogs: { select: { id: true } } }
     });
 
+    if (!exercise) return res.status(404).json({ error: 'Exercise not found' });
+
+    if (exercise.exerciseLogs.length > 0) {
+      const archived = await prisma.exercise.update({
+        where: { id: req.params.id },
+        data: { isArchived: true }
+      });
+      return res.json({ message: 'Exercise has logged history, archived instead of deleted', exercise: archived });
+    }
+
+    await prisma.exercise.delete({ where: { id: req.params.id } });
     res.json({ message: 'Exercise deleted successfully' });
   } catch (error) {
     console.error(error);

@@ -72,6 +72,7 @@ model WorkoutSplit {
   isRestDay     Boolean       @default(false)
   name          String?
   muscleGroups  String?
+  isArchived    Boolean       @default(false)
   clonedFromId  String?
   clonedFrom    WorkoutSplit?   @relation("SplitClones", fields: [clonedFromId], references: [id])
   clones        WorkoutSplit[]  @relation("SplitClones")
