@@ -8,6 +8,7 @@ import {  useNavigate } from 'react-router-dom';
 
 function ClientDetail() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [client, setClient] = useState(null);
     const [workoutPlan, setWorkoutPlan] = useState(null);
     const [workoutSplit, setWorkoutSplit] = useState([]);
@@ -75,7 +76,14 @@ function ClientDetail() {
             </div>
             <div className='btns-container1'>
                <Button variant='utility-primary' onClick={() => setShowPlanSelection(true)} size='sm' text={"Assign Plan"} className='assign-plan-btn'></Button>
-                <Button variant='utility' size='sm' text={"Edit Plan"} className='edit-plan-btn'></Button>
+                <Button
+                    variant='utility'
+                    size='sm'
+                    text={"Edit Plan"}
+                    className='edit-plan-btn'
+                    disabled={!workoutPlan}
+                    onClick={() => workoutPlan && navigate(`/client/${id}/plan/${workoutPlan.id}/edit`)}
+                ></Button>
             </div>
 
             <div className='workoutPlan-container'>
@@ -85,7 +93,14 @@ function ClientDetail() {
                 </div>
                 <div className='btns-container2'>
                     <Button variant='utility-primary' onClick={() => setShowPlanSelection(true)} size='sm' text={"Assign Plan"} className='assign-plan-btn'></Button>
-                    <Button variant='utility-primary' size='sm' text={"Edit Plan"} className='edit-plan-btn'></Button>
+                    <Button
+                        variant='utility-primary'
+                        size='sm'
+                        text={"Edit Plan"}
+                        className='edit-plan-btn'
+                        disabled={!workoutPlan}
+                        onClick={() => workoutPlan && navigate(`/client/${id}/plan/${workoutPlan.id}/edit`)}
+                    ></Button>
                 </div>
             </div>
 

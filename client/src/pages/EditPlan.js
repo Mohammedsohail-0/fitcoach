@@ -78,6 +78,51 @@ function EditPlan() {
         load();
     }, [planId]);
 
+    // WorkoutSplit edits `splits` (day/isRestDay/name/muscleGroups) locally.
+    // ExerciseSection reads muscle groups from splitDrafts, a separate
+    // snapshot loaded once from the server — without this, adding a muscle
+    // group here never reaches the "Target Muscle" dropdown, since nothing
+    // else keeps the two in sync.
+    useEffect(() => {
+        const current = splits.find(s => s.day === selectedDay);
+        const splitEntry = splitIds.find(s => s.day === selectedDay);
+        if (!current || !splitEntry) return;
+        const splitId = splitEntry.id;
+
+        setSplitDrafts(prev => {
+            const draft = prev[splitId];
+            if (!draft) return prev;
+
+            const newMuscleGroupsStr = current.muscleGroups.join(', ');
+            if (draft.muscleGroups === newMuscleGroupsStr && draft.isRestDay === current.isRestDay) {
+                return prev; // nothing actually changed, avoid an update loop
+            }
+
+            // seed a blank exercise for any group that was just added, same
+            // as CreatePlan does on initial load
+            const existingGroups = new Set((draft.exercises || []).map(e => e.muscleGroup));
+            const newDefaults = current.muscleGroups
+                .filter(g => !existingGroups.has(g))
+                .map(g => ({
+                    id: crypto.randomUUID(),
+                    name: '',
+                    muscleGroup: g,
+                    order: 0,
+                    sets: [{ id: crypto.randomUUID(), setNumber: 1, reps: '', weight: '' }]
+                }));
+
+            return {
+                ...prev,
+                [splitId]: {
+                    ...draft,
+                    isRestDay: current.isRestDay,
+                    muscleGroups: newMuscleGroupsStr,
+                    exercises: [...(draft.exercises || []), ...newDefaults]
+                }
+            };
+        });
+    }, [splits, selectedDay, splitIds]);
+
     // Push local day metadata (rest-day toggle, name, muscle groups) for every
     // day back to the server. Exercises themselves are saved separately by
     // ExerciseSection before this runs.
