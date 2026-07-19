@@ -328,7 +328,12 @@ export function WorkoutSplit({ splits, setSplits, submitted, selectedDay, setSel
 }
 
 export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDrafts }) {
+    const navigate = useNavigate();
     const [targetMuscle, setTargetMuscle] = useState("");
+    const [savingDay, setSavingDay] = useState(null); // which day is currently POSTing
+    const [savedDays, setSavedDays] = useState({});   // { [splitId]: true } once persisted
+    const [finishError, setFinishError] = useState("");
+    const [isFinishing, setIsFinishing] = useState(false);
     const currentSplitId = splitIds.find(s => s.day === selectedDay)?.id;
     const currentSplit = currentSplitId ? splitDrafts[currentSplitId] : null;
 
@@ -401,6 +406,60 @@ export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDr
         }));
     };
 
+    // Push this day's exercises (with sets) to the server. Called per-day
+    // (so a coach can bounce between days without losing saved work) and
+    // again for every day when "Finish Plan" is pressed, to make sure the
+    // draft actually matches what's on the server before leaving the page.
+    const saveSplitExercises = async (splitId, exercises) => {
+        const payload = (exercises || []).map((ex, i) => ({
+            name: ex.name,
+            muscleGroup: ex.muscleGroup,
+            order: i,
+            sets: (ex.sets || []).map((s, j) => ({
+                setNumber: j + 1,
+                reps: s.reps,
+                weight: s.weight
+            }))
+        }));
+
+        const res = await api.post(`/workout/split/${splitId}/exercises`, { exercises: payload });
+        return res.data;
+    };
+
+    const handleSaveDay = async () => {
+        if (!currentSplitId) return;
+        setSavingDay(currentSplitId);
+        setFinishError("");
+        try {
+            await saveSplitExercises(currentSplitId, currentSplit.exercises);
+            setSavedDays(prev => ({ ...prev, [currentSplitId]: true }));
+        } catch (err) {
+            console.error("Server said:", err.response?.data);
+            setFinishError(err.response?.data?.error || "Couldn't save this day. Please try again.");
+        } finally {
+            setSavingDay(null);
+        }
+    };
+
+    const handleFinishPlan = async () => {
+        setIsFinishing(true);
+        setFinishError("");
+        try {
+            // save every day that has a loaded draft, not just the one on screen
+            for (const { id } of splitIds) {
+                const draft = splitDrafts[id];
+                if (!draft) continue; // day was never opened, nothing to save
+                await saveSplitExercises(id, draft.exercises);
+            }
+            navigate('/coach/dashboard');
+        } catch (err) {
+            console.error("Server said:", err.response?.data);
+            setFinishError(err.response?.data?.error || "Couldn't save the plan. Please try again.");
+        } finally {
+            setIsFinishing(false);
+        }
+    };
+
     if (!currentSplit) return null; // or a loading state
 
     return (
@@ -428,6 +487,31 @@ export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDr
             ))}
 
             <Button variant="utility" text="+ Add Exercise" onClick={addExercise} />
+
+            {finishError && <p className="error-text">*{finishError}</p>}
+
+            <div className="exercise-section-actions">
+                <Button
+                    variant="secondary"
+                    size="md"
+                    text={
+                        savingDay === currentSplitId
+                            ? "Saving..."
+                            : savedDays[currentSplitId]
+                                ? "Saved ✓"
+                                : "Save this day"
+                    }
+                    disabled={savingDay === currentSplitId}
+                    onClick={handleSaveDay}
+                />
+                <Button
+                    variant="primary"
+                    size="md"
+                    text={isFinishing ? "Finishing..." : "Finish Plan"}
+                    disabled={isFinishing}
+                    onClick={handleFinishPlan}
+                />
+            </div>
         </div>
     );
 }

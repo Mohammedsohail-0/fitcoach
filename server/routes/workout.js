@@ -45,7 +45,7 @@ router.post('/plan/:templateId/assign', authMiddleware, async (req, res) => {
   try {
     const template = await prisma.workoutPlan.findUnique({
       where: { id: req.params.templateId },
-      include: { workoutSplits: { include: { exercises: true } } }
+      include: { workoutSplits: { include: { exercises: { include: { exerciseSets: true } } } } }
     });
 
     if (!template) {
@@ -77,11 +77,16 @@ router.post('/plan/:templateId/assign', authMiddleware, async (req, res) => {
             exercises: {
               create: split.exercises.map((ex) => ({
                 name: ex.name,
-                sets: ex.sets,
-                reps: ex.reps,
-                weight: ex.weight,
+                muscleGroup: ex.muscleGroup,
                 order: ex.order,
-                notes: ex.notes
+                notes: ex.notes,
+                exerciseSets: {
+                  create: ex.exerciseSets.map((s) => ({
+                    setNumber: s.setNumber,
+                    reps: s.reps,
+                    weight: s.weight
+                  }))
+                }
               }))
             }
           }))
@@ -256,24 +261,88 @@ router.delete('/split/:id', authMiddleware, async (req, res) => {
 
 // Add exercise to split
 router.post('/exercise', authMiddleware, async (req, res) => {
-  const { splitId, name, sets, reps, weight, order, notes } = req.body;
+  const { splitId, name, muscleGroup, order, notes, sets } = req.body;
   try {
     const exercise = await prisma.exercise.create({
       data: {
         workoutSplitId: splitId,
         name,
-        sets,
-        reps,
-        weight,
+        muscleGroup,
         order,
-        notes
-      }
+        notes,
+        ...(Array.isArray(sets) && sets.length > 0 && {
+          exerciseSets: {
+            create: sets.map((s, i) => ({
+              setNumber: s.setNumber ?? i + 1,
+              reps: parseInt(s.reps, 10) || 0,
+              weight: s.weight !== '' && s.weight != null ? parseFloat(s.weight) : null
+            }))
+          }
+        })
+      },
+      include: { exerciseSets: true }
     });
 
     res.status(201).json(exercise);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
+// Bulk save all exercises (with their sets) for a split — replaces whatever
+// currently exists for that split. This is what CreatePlan's ExerciseSection
+// calls on "Save"/"Finish", since the UI builds a full draft of exercises
+// per muscle group before persisting anything.
+router.post('/split/:splitId/exercises', authMiddleware, async (req, res) => {
+  const { splitId } = req.params;
+  const { exercises } = req.body; // [{ name, muscleGroup, order, sets: [{ setNumber, reps, weight }] }]
+
+  if (!Array.isArray(exercises)) {
+    return res.status(400).json({ error: 'exercises must be an array' });
+  }
+
+  const invalid = exercises.find(e => !e.name || !e.name.trim());
+  if (invalid) {
+    return res.status(400).json({ error: 'Every exercise needs a name' });
+  }
+
+  try {
+    const split = await prisma.workoutSplit.findUnique({ where: { id: splitId } });
+    if (!split) return res.status(404).json({ error: 'Split not found' });
+
+    const saved = await prisma.$transaction(async (tx) => {
+      // wipe existing exercises for this split (ExerciseSet cascades via schema)
+      await tx.exercise.deleteMany({ where: { workoutSplitId: splitId } });
+
+      const created = [];
+      for (const ex of exercises) {
+        const exercise = await tx.exercise.create({
+          data: {
+            workoutSplitId: splitId,
+            name: ex.name.trim(),
+            muscleGroup: ex.muscleGroup,
+            order: ex.order ?? 0,
+            notes: ex.notes || null,
+            exerciseSets: {
+              create: (ex.sets || []).map((s, i) => ({
+                setNumber: s.setNumber ?? i + 1,
+                reps: parseInt(s.reps, 10) || 0,
+                weight: s.weight !== '' && s.weight != null ? parseFloat(s.weight) : null
+              }))
+            }
+          },
+          include: { exerciseSets: true }
+        });
+        created.push(exercise);
+      }
+      return created;
+    });
+
+    res.status(201).json(saved);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong saving exercises' });
   }
 });
 
@@ -304,13 +373,15 @@ router.get('/split/one/:id', authMiddleware, async (req, res) => {
         res.status(500).json({ error: 'Something went wrong' });
     }
 });
-// Update exercise
+// Update exercise (name/muscleGroup/order/notes only — use the bulk
+// /split/:splitId/exercises route to change sets)
 router.put('/exercise/:id', authMiddleware, async (req, res) => {
-  const { name, sets, reps, weight, order, notes } = req.body;
+  const { name, muscleGroup, order, notes } = req.body;
   try {
     const exercise = await prisma.exercise.update({
       where: { id: req.params.id },
-      data: { name, sets, reps, weight, order, notes }
+      data: { name, muscleGroup, order, notes },
+      include: { exerciseSets: true }
     });
 
     res.json(exercise);
