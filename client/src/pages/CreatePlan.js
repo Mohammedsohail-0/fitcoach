@@ -451,7 +451,7 @@ export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDr
                 if (!draft) continue; // day was never opened, nothing to save
                 await saveSplitExercises(id, draft.exercises);
             }
-            navigate('/coach/dashboard');
+            navigate(`/client/${client.id}`);
         } catch (err) {
             console.error("Server said:", err.response?.data);
             setFinishError(err.response?.data?.error || "Couldn't save the plan. Please try again.");
@@ -486,7 +486,8 @@ export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDr
                 />
             ))}
 
-            <Button variant="utility" text="+ Add Exercise" onClick={addExercise} />
+            <Button variant="utility" text="+ Add Exercise" className="add-exercise-btn" onClick={addExercise} />
+          
 
             {finishError && <p className="error-text">*{finishError}</p>}
 

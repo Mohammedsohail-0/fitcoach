@@ -315,16 +315,7 @@
     flex-shrink: 0;
 }
 
-/* ==========================================================================
-   Exercise section actions (Save this day / Finish Plan)
-   ========================================================================== */
-.exercise-section-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: clamp(10px, 3vw, 16px);
-    justify-content: flex-end;
-    margin-top: 20px;
-}
+
 
 /* ==========================================================================
    Error text
@@ -450,7 +441,25 @@
 .target-muscle-wraper label {
     font-size: clamp(1rem, 3vw, 2rem);
 }
+.exercise-section-actions{
+    display: flex;
+    flex-direction: row;
+    gap: clamp(10px, 3vw, 16px);
+    margin-top: 20px;
+    justify-content: center;
+   
+}
 
+.exercise-section-actions button{
+    width: clamp(40%, 6vw, 50%);
+    font-size: clamp(0.85rem, 3vw, 1rem);
+}
+.add-exercise-btn {
+    width: 50%;
+    margin-inline: auto;
+    display: block;
+    border-radius: 0px 0px 50px 50px;
+}
 /*============================================================================
   Set Cards
 ============================================================================*/
