@@ -581,3 +581,38 @@
     text-align: center;
     padding: 40px 0;
 }
+
+/*============================================================================
+  Push-to-clients dialog (EditPlan)
+============================================================================*/
+.push-dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.push-dialog {
+    background: var(--surface);
+    border: 1px solid var(--border-secondary);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 420px;
+    width: 100%;
+}
+
+.push-dialog .main {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.push-failed-list {
+    margin: 12px 0;
+    padding-left: 18px;
+    color: var(--error);
+    font-size: 0.85rem;
+}

@@ -171,7 +171,18 @@ router.get('/plan/:id', authMiddleware, async (req, res) => {
 
     if (!plan) return res.status(404).json({ error: 'Plan not found' });
 
-    res.json(plan);
+    const shaped = {
+      ...plan,
+      workoutSplits: plan.workoutSplits.map(split => ({
+        ...split,
+        exercises: split.exercises.map(ex => ({
+          ...ex,
+          sets: ex.exerciseSets.map(s => ({ id: s.id, setNumber: s.setNumber, reps: s.reps, weight: s.weight }))
+        }))
+      }))
+    };
+
+    res.json(shaped);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Something went wrong' });
@@ -538,13 +549,15 @@ router.post('/exercise', authMiddleware, async (req, res) => {
   }
 });
 
-// Bulk save all exercises (with their sets) for a split — replaces whatever
-// currently exists for that split. This is what CreatePlan's ExerciseSection
-// calls on "Save"/"Finish", since the UI builds a full draft of exercises
-// per muscle group before persisting anything.
+// Bulk save all exercises (with their sets) for a split. Diffs against
+// what's already there (matched by exercise id) instead of wiping everything —
+// once a client has logged workouts, a hard wipe would violate the FK on
+// ExerciseLog. Exercises the payload sends an id for are treated as
+// existing/updated; ones with no id are new; existing ones missing from the
+// payload are removed (archived if logged, deleted otherwise).
 router.post('/split/:splitId/exercises', authMiddleware, async (req, res) => {
   const { splitId } = req.params;
-  const { exercises } = req.body; // [{ name, muscleGroup, order, sets: [{ setNumber, reps, weight }] }]
+  const { exercises } = req.body; // [{ id?, name, muscleGroup, order, sets: [{ setNumber, reps, weight }] }]
 
   if (!Array.isArray(exercises)) {
     return res.status(400).json({ error: 'exercises must be an array' });
@@ -556,35 +569,58 @@ router.post('/split/:splitId/exercises', authMiddleware, async (req, res) => {
   }
 
   try {
-    const split = await prisma.workoutSplit.findUnique({ where: { id: splitId } });
+    const split = await prisma.workoutSplit.findUnique({
+      where: { id: splitId },
+      include: { exercises: { where: { isArchived: false }, include: { exerciseLogs: { select: { id: true } } } } }
+    });
     if (!split) return res.status(404).json({ error: 'Split not found' });
 
     const saved = await prisma.$transaction(async (tx) => {
-      // wipe existing exercises for this split (ExerciseSet cascades via schema)
-      await tx.exercise.deleteMany({ where: { workoutSplitId: splitId } });
+      const incomingIds = new Set(exercises.filter(e => e.id).map(e => e.id));
 
-      const created = [];
-      for (const ex of exercises) {
-        const exercise = await tx.exercise.create({
-          data: {
-            workoutSplitId: splitId,
-            name: ex.name.trim(),
-            muscleGroup: ex.muscleGroup,
-            order: ex.order ?? 0,
-            notes: ex.notes || null,
-            exerciseSets: {
-              create: (ex.sets || []).map((s, i) => ({
-                setNumber: s.setNumber ?? i + 1,
-                reps: parseInt(s.reps, 10) || 0,
-                weight: s.weight !== '' && s.weight != null ? parseFloat(s.weight) : null
-              }))
-            }
-          },
-          include: { exerciseSets: true }
-        });
-        created.push(exercise);
+      // existing exercises the payload no longer includes
+      for (const existing of split.exercises) {
+        if (incomingIds.has(existing.id)) continue;
+        if (existing.exerciseLogs.length > 0) {
+          await tx.exercise.update({ where: { id: existing.id }, data: { isArchived: true } });
+        } else {
+          await tx.exercise.delete({ where: { id: existing.id } });
+        }
       }
-      return created;
+
+      const result = [];
+      for (const ex of exercises) {
+        const setData = (ex.sets || []).map((s, i) => ({
+          setNumber: s.setNumber ?? i + 1,
+          reps: parseInt(s.reps, 10) || 0,
+          weight: s.weight !== '' && s.weight != null ? parseFloat(s.weight) : null
+        }));
+
+        if (ex.id && split.exercises.some(e => e.id === ex.id)) {
+          await tx.exercise.update({
+            where: { id: ex.id },
+            data: { name: ex.name.trim(), muscleGroup: ex.muscleGroup, order: ex.order ?? 0, notes: ex.notes || null }
+          });
+          await tx.exerciseSet.deleteMany({ where: { exerciseId: ex.id } });
+          await tx.exerciseSet.createMany({ data: setData.map(s => ({ ...s, exerciseId: ex.id })) });
+          const full = await tx.exercise.findUnique({ where: { id: ex.id }, include: { exerciseSets: true } });
+          result.push(full);
+        } else {
+          const created = await tx.exercise.create({
+            data: {
+              workoutSplitId: splitId,
+              name: ex.name.trim(),
+              muscleGroup: ex.muscleGroup,
+              order: ex.order ?? 0,
+              notes: ex.notes || null,
+              exerciseSets: { create: setData }
+            },
+            include: { exerciseSets: true }
+          });
+          result.push(created);
+        }
+      }
+      return result;
     });
 
     res.status(201).json(saved);
@@ -613,10 +649,19 @@ router.get('/split/one/:id', authMiddleware, async (req, res) => {
     try {
         const split = await prisma.workoutSplit.findUnique({
             where: { id: req.params.id },
-            include: { exercises: true }
+            include: { exercises: { where: { isArchived: false }, include: { exerciseSets: true } } }
         });
         if (!split) return res.status(404).json({ error: 'Split not found' });
-        res.json(split);
+
+        const shaped = {
+            ...split,
+            exercises: split.exercises.map(ex => ({
+                ...ex,
+                sets: ex.exerciseSets.map(s => ({ id: s.id, setNumber: s.setNumber, reps: s.reps, weight: s.weight }))
+            }))
+        };
+
+        res.json(shaped);
     } catch (error) {
         res.status(500).json({ error: 'Something went wrong' });
     }

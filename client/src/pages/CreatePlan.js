@@ -332,7 +332,7 @@ export function WorkoutSplit({ splits, setSplits, submitted, selectedDay, setSel
     );
 }
 
-export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDrafts, planId, clientId }) {
+export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDrafts, planId, clientId, mode = "create", onFinish }) {
     const navigate = useNavigate();
     const [targetMuscle, setTargetMuscle] = useState("");
     const [savingDay, setSavingDay] = useState(null); // which day is currently POSTing
@@ -446,6 +446,7 @@ export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDr
     // draft actually matches what's on the server before leaving the page.
     const saveSplitExercises = async (splitId, exercises) => {
         const payload = (exercises || []).map((ex, i) => ({
+            id: ex.id, // locally-generated ids for new exercises just won't match anything server-side — backend treats those as creates
             name: ex.name,
             muscleGroup: ex.muscleGroup,
             order: i,
@@ -486,11 +487,14 @@ export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDr
                 await saveSplitExercises(id, draft.exercises);
             }
 
-            if (planId && clientId) {
-                await api.post(`/workout/plan/${planId}/assign`, { clientId });
+            if (mode === "edit") {
+                if (onFinish) await onFinish();
+            } else {
+                if (planId && clientId) {
+                    await api.post(`/workout/plan/${planId}/assign`, { clientId });
+                }
+                navigate(clientId ? `/client/${clientId}` : '/coach');
             }
-
-            navigate(clientId ? `/client/${clientId}` : '/coach');
         } catch (err) {
             console.error("Server said:", err.response?.data);
             setFinishError(err.response?.data?.error || "Couldn't save the plan. Please try again.");
@@ -568,7 +572,7 @@ export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDr
                 <Button
                     variant="primary"
                     size="md"
-                    text={isFinishing ? "Finishing..." : "Finish Plan"}
+                    text={isFinishing ? "Saving..." : mode === "edit" ? "Save Plan" : "Finish Plan"}
                     disabled={isFinishing || planIncomplete}
                     onClick={handleFinishPlan}
                 />
