@@ -2,7 +2,7 @@ import "./CreatePlan.css";
 import { useState, useEffect } from "react";
 import api from "../services/api";
 import Button from "../components/Button";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 
 
@@ -10,9 +10,11 @@ import { useNavigate } from 'react-router-dom';
 
 function CreatePlan() {
     const navigate = useNavigate();
+    const { clientId } = useParams();
 
     const [newPlan, setNewPlan] = useState({ title: "", description: "" });
     const [selectedDay, setSelectedDay] = useState("Monday");
+    const [planId, setPlanId] = useState(null);
     const [splitIds, setSplitIds] = useState([]);
     const [splitDrafts, setSplitDrafts] = useState({});
 
@@ -49,6 +51,7 @@ function CreatePlan() {
                 isTemplate: true
             });
             const planId = planRes.data.id;
+            setPlanId(planId);
             const createdSplitIds = [];
 
             for (const split of splits) {
@@ -120,6 +123,8 @@ function CreatePlan() {
                     splitIds={splitIds}
                     splitDrafts={splitDrafts}
                     setSplitDrafts={setSplitDrafts}
+                    planId={planId}
+                    clientId={clientId}
                 />
             }
 
@@ -327,7 +332,7 @@ export function WorkoutSplit({ splits, setSplits, submitted, selectedDay, setSel
     );
 }
 
-export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDrafts }) {
+export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDrafts, planId, clientId }) {
     const navigate = useNavigate();
     const [targetMuscle, setTargetMuscle] = useState("");
     const [savingDay, setSavingDay] = useState(null); // which day is currently POSTing
@@ -451,7 +456,12 @@ export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDr
                 if (!draft) continue; // day was never opened, nothing to save
                 await saveSplitExercises(id, draft.exercises);
             }
-            navigate(`/client/${client.id}`);
+
+            if (planId && clientId) {
+                await api.post(`/workout/plan/${planId}/assign`, { clientId });
+            }
+
+            navigate(clientId ? `/client/${clientId}` : '/coach');
         } catch (err) {
             console.error("Server said:", err.response?.data);
             setFinishError(err.response?.data?.error || "Couldn't save the plan. Please try again.");
@@ -486,8 +496,7 @@ export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDr
                 />
             ))}
 
-            <Button variant="utility" text="+ Add Exercise" className="add-exercise-btn" onClick={addExercise} />
-          
+            <Button variant="utility" text="+ Add Exercise" onClick={addExercise} />
 
             {finishError && <p className="error-text">*{finishError}</p>}
 
