@@ -14,6 +14,14 @@ function ClientDetail() {
     const [workoutSplit, setWorkoutSplit] = useState([]);
     const [showPlanSelection, setShowPlanSelection] = useState(false);
 
+    const [showEditClient, setShowEditClient] = useState(false);
+    const [editForm, setEditForm] = useState({ name: '', goal: '', notes: '' });
+    const [isSavingClient, setIsSavingClient] = useState(false);
+    const [clientError, setClientError] = useState('');
+
+    const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
+    const [isDeactivating, setIsDeactivating] = useState(false);
+
 
     useEffect(() => {
         const fetchClient = async () => {
@@ -64,10 +72,46 @@ function ClientDetail() {
         }
     }
 
+    const openEditClient = () => {
+        setEditForm({ name: client.name || '', goal: client.goal || '', notes: client.notes || '' });
+        setClientError('');
+        setShowEditClient(true);
+    };
+
+    const handleSaveClient = async () => {
+        setIsSavingClient(true);
+        setClientError('');
+        try {
+            const res = await api.put(`/coach/clients/${id}`, editForm);
+            setClient(prev => ({ ...prev, ...res.data }));
+            setShowEditClient(false);
+        } catch (err) {
+            console.error(err);
+            setClientError("Couldn't save changes. Please try again.");
+        } finally {
+            setIsSavingClient(false);
+        }
+    };
+
+    const handleDeactivateClient = async () => {
+        setIsDeactivating(true);
+        try {
+            await api.delete(`/coach/clients/${id}`);
+            navigate('/coach');
+        } catch (err) {
+            console.error(err);
+            setIsDeactivating(false);
+        }
+    };
+
 
     return (
         <>
             <ClientCard client={client} />
+            <div className='btns-container1'>
+                <Button variant='utility' size='sm' text={"Edit Client"} onClick={openEditClient}></Button>
+                <Button variant='utility' size='sm' text={"Deactivate Client"} onClick={() => setShowDeactivateConfirm(true)}></Button>
+            </div>
             <div className='notes-container'>
                 <div className='notes-wraper'>
                     <p className='notes-lable'>Notes: </p>
@@ -107,6 +151,70 @@ function ClientDetail() {
             <WorkoutSplitTable workoutSplit={workoutSplit} workoutPlan={workoutPlan}></WorkoutSplitTable>
             {showPlanSelection && (
                 <PlanSelection clientId={id} onClose={() => setShowPlanSelection(false)} />
+            )}
+
+            {showEditClient && (
+                <div className="client-dialog-backdrop" onClick={() => setShowEditClient(false)}>
+                    <div className="client-dialog" onClick={(e) => e.stopPropagation()}>
+                        <h3>Edit Client</h3>
+                        <label>Name</label>
+                        <input
+                            type="text"
+                            value={editForm.name}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                        />
+                        <label>Goal</label>
+                        <input
+                            type="text"
+                            value={editForm.goal}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, goal: e.target.value }))}
+                        />
+                        <label>Notes</label>
+                        <textarea
+                            rows={3}
+                            value={editForm.notes}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, notes: e.target.value }))}
+                        />
+                        {clientError && <p className="error-text">*{clientError}</p>}
+                        <div className="client-dialog-actions">
+                            <Button variant="secondary" size="sm" text="Cancel" onClick={() => setShowEditClient(false)} />
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                text={isSavingClient ? "Saving..." : "Save"}
+                                disabled={isSavingClient}
+                                onClick={handleSaveClient}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showDeactivateConfirm && (
+                <div className="client-dialog-backdrop" onClick={() => !isDeactivating && setShowDeactivateConfirm(false)}>
+                    <div className="client-dialog" onClick={(e) => e.stopPropagation()}>
+                        <h3>Deactivate {client.name}?</h3>
+                        <p className="hint-text">
+                            This hides them from your client list. Their plans and logged history are kept, not deleted.
+                        </p>
+                        <div className="client-dialog-actions">
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                text="Cancel"
+                                disabled={isDeactivating}
+                                onClick={() => setShowDeactivateConfirm(false)}
+                            />
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                text={isDeactivating ? "Deactivating..." : "Deactivate"}
+                                disabled={isDeactivating}
+                                onClick={handleDeactivateClient}
+                            />
+                        </div>
+                    </div>
+                </div>
             )}
         </>
     );

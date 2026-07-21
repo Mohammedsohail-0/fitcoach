@@ -21,7 +21,7 @@ router.get('/clients', authMiddleware, async (req, res) => {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const clients = await prisma.clientProfile.findMany({
-      where: { coachId: coach.id },
+      where: { coachId: coach.id, isActive: true },
       include: {
         user: { select: { email: true, username: true } },
         workoutLogs: {
@@ -77,14 +77,16 @@ router.put('/clients/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// Delete client
+// Deactivate client (soft delete — a real client almost always has plans/logs,
+// and hard-deleting would violate the FK on WorkoutPlan/WorkoutLog anyway)
 router.delete('/clients/:id', authMiddleware, async (req, res) => {
   try {
-    await prisma.clientProfile.delete({
-      where: { id: req.params.id }
+    const client = await prisma.clientProfile.update({
+      where: { id: req.params.id },
+      data: { isActive: false }
     });
 
-    res.json({ message: 'Client deleted successfully' });
+    res.json({ message: 'Client deactivated successfully', client });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Something went wrong' });
