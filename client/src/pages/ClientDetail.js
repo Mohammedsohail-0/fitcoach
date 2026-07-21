@@ -107,11 +107,11 @@ function ClientDetail() {
 
     return (
         <>
-            <ClientCard client={client} />
-            <div className='btns-container1'>
-                <Button variant='utility' size='sm' text={"Edit Client"} onClick={openEditClient}></Button>
-                <Button variant='utility' size='sm' text={"Deactivate Client"} onClick={() => setShowDeactivateConfirm(true)}></Button>
-            </div>
+            <ClientCard
+                client={client}
+                onEdit={openEditClient}
+                onDeactivate={() => setShowDeactivateConfirm(true)}
+            />
             <div className='notes-container'>
                 <div className='notes-wraper'>
                     <p className='notes-lable'>Notes: </p>
@@ -222,7 +222,9 @@ function ClientDetail() {
 
 export default ClientDetail;
 
-export function ClientCard({ client }) {
+export function ClientCard({ client, onEdit, onDeactivate }) {
+    const [menuOpen, setMenuOpen] = useState(false);
+
     return (
         <div className='client-card'>
 
@@ -232,7 +234,34 @@ export function ClientCard({ client }) {
 
             <div className='details-container' >
 
-                <h2>{client.name}</h2>
+                <div className="client-name-row">
+                    <h2>{client.name}</h2>
+
+                    <div className="client-card-menu">
+                        <button
+                            className="client-card-menu-trigger"
+                            aria-label="Client options"
+                            aria-expanded={menuOpen}
+                            onClick={() => setMenuOpen(prev => !prev)}
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <circle cx="12" cy="5" r="2" />
+                                <circle cx="12" cy="12" r="2" />
+                                <circle cx="12" cy="19" r="2" />
+                            </svg>
+                        </button>
+
+                        {menuOpen && (
+                            <>
+                                <div className="client-card-menu-backdrop" onClick={() => setMenuOpen(false)} />
+                                <div className="client-card-menu-dropdown">
+                                    <button onClick={() => { setMenuOpen(false); onEdit(); }}>Edit Client</button>
+                                    <button className="danger" onClick={() => { setMenuOpen(false); onDeactivate(); }}>Deactivate Client</button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
 
                 <div className='client-email-container'>
                     <p>{client.user.email}</p>
