@@ -452,3 +452,66 @@
     color: #888888;
     letter-spacing: 1px;
 }
+/*============================================================================
+  View Exercise dialog
+============================================================================*/
+.view-exercise-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.view-exercise-dialog {
+    background: var(--surface);
+    border: 1px solid var(--border-secondary);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 480px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.view-exercise-dialog h3 {
+    margin: 0;
+}
+
+.view-exercise-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.view-exercise-item {
+    border: 1px solid var(--border-secondary);
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.view-exercise-name {
+    font-weight: 600;
+    margin: 0 0 8px;
+}
+
+.view-exercise-sets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.view-set-pill {
+    background: var(--bg);
+    border: 1px solid var(--border-secondary);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}

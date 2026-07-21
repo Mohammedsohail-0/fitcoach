@@ -113,9 +113,6 @@ router.get('/plan/templates', authMiddleware, async (req, res) => {
       where: { userId: req.user.userId }
     });
 
-    console.log('req.user.userId:', req.user.userId);
-    console.log('resolved coach:', coach);
-
     const plans = await prisma.workoutPlan.findMany({
       where: {
         coachId: coach.id,
@@ -123,7 +120,7 @@ router.get('/plan/templates', authMiddleware, async (req, res) => {
       },
       include: { workoutSplits: { include: { exercises: true } } }
     });
-      console.log('plans found:', plans);
+
     res.json(plans);
   } catch (error) {
     console.error(error);
@@ -460,11 +457,19 @@ router.post('/split', authMiddleware, async (req, res) => {
 router.get('/split/:planId', authMiddleware, async (req, res) => {
   try {
     const splits = await prisma.workoutSplit.findMany({
-      where: { workoutPlanId: req.params.planId },
-      include: { exercises: true }
+      where: { workoutPlanId: req.params.planId, isArchived: false },
+      include: { exercises: { where: { isArchived: false }, include: { exerciseSets: true } } }
     });
 
-    res.json(splits);
+    const shaped = splits.map(split => ({
+      ...split,
+      exercises: split.exercises.map(ex => ({
+        ...ex,
+        sets: ex.exerciseSets.map(s => ({ id: s.id, setNumber: s.setNumber, reps: s.reps, weight: s.weight }))
+      }))
+    }));
+
+    res.json(shaped);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Something went wrong' });

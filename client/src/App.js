@@ -10,6 +10,7 @@ import ClientDetail from './pages/ClientDetail';
 import ClientHome from './pages/ClientHome';
 import CreatePlanPage from './pages/CreatePlan';
 import EditPlanPage from './pages/EditPlan';
+import TemplateList from './pages/TemplateList';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { token, role } = useAuth();
@@ -54,6 +55,16 @@ function App() {
       <Route path="/coach/templates/:planId/edit" element={
         <ProtectedRoute allowedRole="coach">
           <EditPlanPage />
+        </ProtectedRoute>
+      }/>
+      <Route path="/coach/templates" element={
+        <ProtectedRoute allowedRole="coach">
+          <Layout><TemplateList /></Layout>
+        </ProtectedRoute>
+      }/>
+      <Route path="/coach/templates/create" element={
+        <ProtectedRoute allowedRole="coach">
+          <CreatePlanPage />
         </ProtectedRoute>
       }/>
         <Route path="*" element={<Navigate to="/login" />} />

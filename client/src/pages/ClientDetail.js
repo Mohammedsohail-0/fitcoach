@@ -152,6 +152,7 @@ export function ClientCard({ client }) {
 }
 
 export function WorkoutSplitTable({ workoutPlan, workoutSplit }) {
+    const [viewingSplit, setViewingSplit] = useState(null);
 
     return (
         <div className='workoutSplit-container'>
@@ -183,7 +184,13 @@ export function WorkoutSplitTable({ workoutPlan, workoutSplit }) {
                                     {split.isRestDay ? (
                                         <span className="rest-dash">--</span>
                                     ) : (
-                                        <Button text={"View exercise"} variant='secondary' size='sm' className="view-exercise-btn">View exercise</Button>
+                                        <Button
+                                            text={"View exercise"}
+                                            variant='secondary'
+                                            size='sm'
+                                            className="view-exercise-btn"
+                                            onClick={() => setViewingSplit(split)}
+                                        />
                                     )}
                                 </td>
                             </tr>
@@ -192,6 +199,35 @@ export function WorkoutSplitTable({ workoutPlan, workoutSplit }) {
 
                 </tbody>
             </table>
+
+            {viewingSplit && (
+                <div className="view-exercise-backdrop" onClick={() => setViewingSplit(null)}>
+                    <div className="view-exercise-dialog" onClick={(e) => e.stopPropagation()}>
+                        <h3>{viewingSplit.day} — {viewingSplit.muscleGroups}</h3>
+
+                        {(!viewingSplit.exercises || viewingSplit.exercises.length === 0) ? (
+                            <p className="empty-state">No exercises added for this day yet.</p>
+                        ) : (
+                            <div className="view-exercise-list">
+                                {viewingSplit.exercises.map((ex) => (
+                                    <div key={ex.id} className="view-exercise-item">
+                                        <p className="view-exercise-name">{ex.name}</p>
+                                        <div className="view-exercise-sets">
+                                            {(ex.sets || []).map((s, i) => (
+                                                <span key={s.id || i} className="view-set-pill">
+                                                    {s.weight ? `${s.weight}kg` : "BW"} × {s.reps}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <Button variant="primary" size="sm" text="Close" onClick={() => setViewingSplit(null)} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
