@@ -12,6 +12,12 @@ function CoachDashboard() {
   const navigate = useNavigate();
   const [coachName, setCoachName] = useState('');
   const [clients, setClients] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [inviteLink, setInviteLink] = useState('');
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState('');
+  const [copied, setCopied] = useState(false);
 
 
   // fetch coach's own profile
@@ -40,7 +46,41 @@ function CoachDashboard() {
     fetchClients();
   }, [])
 
+  const filteredClients = clients.filter(client =>
+    client.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
+  const handleAddClient = async () => {
+    setShowInviteDialog(true);
+    setInviteLoading(true);
+    setInviteError('');
+    setCopied(false);
+    try {
+      const res = await api.post('/coach/invite');
+      setInviteLink(res.data.inviteLink);
+    } catch (error) {
+      console.log(error);
+      setInviteError('Could not generate invite link. Please try again.');
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
+  const handleCopyInviteLink = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopied(true);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const closeInviteDialog = () => {
+    setShowInviteDialog(false);
+    setInviteLink('');
+    setInviteError('');
+    setCopied(false);
+  };
 
   return (
     <div className="coachDashboard">
@@ -70,10 +110,12 @@ function CoachDashboard() {
               type="text"
               placeholder="Search clients"
               className="search-input"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <div>
-            <Button variant="secondary" size="sm" className="add-client-btn" text="+ Add Client"></Button>
+            <Button variant="secondary" size="sm" className="add-client-btn" text="+ Add Client" onClick={handleAddClient}></Button>
           </div>
         </div>
       </div>
@@ -92,7 +134,18 @@ function CoachDashboard() {
           </thead>
           <tbody>
             {
-              clients.map((client) => (
+              filteredClients.length === 0 && (
+                <tr>
+                  <td colSpan="4" className="empty-state">
+                    {clients.length === 0
+                      ? "No clients yet — add your first client to get started."
+                      : "No clients match your search."}
+                  </td>
+                </tr>
+              )
+            }
+            {
+              filteredClients.map((client) => (
 
                 <tr key={client.id} onClick={() => navigate(`/client/${client.id}`)} style={{ cursor: 'pointer' }}>
                   <td  data-label="Client">
@@ -116,6 +169,35 @@ function CoachDashboard() {
           </tbody>
         </table>
       </div>
+
+      {showInviteDialog && (
+        <div className="invite-dialog-backdrop" onClick={closeInviteDialog}>
+          <div className="invite-dialog" onClick={(e) => e.stopPropagation()}>
+            <h2>Invite a Client</h2>
+            {inviteLoading ? (
+              <p className="loading-text">Generating invite link...</p>
+            ) : inviteError ? (
+              <p className="error">{inviteError}</p>
+            ) : (
+              <>
+                <p className="hint-text">Share this link with your client so they can create their account.</p>
+                <div className="invite-link-row">
+                  <input type="text" readOnly value={inviteLink} className="invite-link-input" />
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    text={copied ? "Copied!" : "Copy"}
+                    onClick={handleCopyInviteLink}
+                  />
+                </div>
+              </>
+            )}
+            <div className="invite-dialog-actions">
+              <Button variant="secondary" size="sm" text="Close" onClick={closeInviteDialog} />
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

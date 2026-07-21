@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import Layout from './components/Layout';
 
 // Pages
 import Login from './pages/Login';
@@ -26,18 +27,18 @@ function App() {
 
       <Route path="/coach" element={
         <ProtectedRoute allowedRole="coach">
-          <CoachDashboard />
+          <Layout><CoachDashboard /></Layout>
         </ProtectedRoute>
       } />
 
       <Route path="/client" element={
         <ProtectedRoute allowedRole="client">
-          <ClientHome />
+          <Layout><ClientHome /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/client/:id" element={
         <ProtectedRoute allowedRole="coach">
-          <ClientDetail />
+          <Layout><ClientDetail /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/client/:clientId/plan/create" element={

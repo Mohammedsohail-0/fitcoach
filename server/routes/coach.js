@@ -106,8 +106,9 @@ router.post('/invite', authMiddleware, async (req, res) => {
       }
     });
 
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
     res.json({
-      inviteLink: `http://localhost:3000/register?invite=${invitation.inviteCode}`,
+      inviteLink: `${clientUrl}/register?invite=${invitation.inviteCode}`,
       inviteCode: invitation.inviteCode
     });
   } catch (error) {
@@ -117,21 +118,21 @@ router.post('/invite', authMiddleware, async (req, res) => {
 });
 
 
-// get coach's own profile
-router.get('/profile', authMiddleware, async (req, res) => {
-  try {
-    const coach = await prisma.coachProfile.findUnique({
-      where: { userId: req.user.userId },
-      include: { user: { select: { email: true, username: true } } }
-    });
+  // get coach's own profile
+  router.get('/profile', authMiddleware, async (req, res) => {
+    try {
+      const coach = await prisma.coachProfile.findUnique({
+        where: { userId: req.user.userId },
+        include: { user: { select: { email: true, username: true } } }
+      });
 
-    if (!coach) return res.status(404).json({ error: 'Coach not found' });
+      if (!coach) return res.status(404).json({ error: 'Coach not found' });
 
-    res.json(coach);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Something went wrong' });
-  }
-});
+      res.json(coach);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Something went wrong' });
+    }
+  });
 
-module.exports = router;
+  module.exports = router;

@@ -545,7 +545,7 @@ export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDr
                 />
             ))}
 
-            <Button variant="utility" text="+ Add Exercise" onClick={addExercise} />
+            <Button variant="utility" text="+ Add Exercise" className="add-exercise-btn" onClick={addExercise} />
 
             {finishError && <p className="error-text">*{finishError}</p>}
             {currentDayIncomplete && (
