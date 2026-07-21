@@ -119,9 +119,9 @@ function ClientDetail() {
                 </div>
             </div>
             <div className='btns-container1'>
-               <Button variant='utility-primary' onClick={() => setShowPlanSelection(true)} size='sm' text={"Assign Plan"} className='assign-plan-btn'></Button>
+               <Button variant='utility-primary-primary' onClick={() => setShowPlanSelection(true)} size='sm' text={"Assign Plan"} className='assign-plan-btn'></Button>
                 <Button
-                    variant='utility'
+                    variant='utility-primary'
                     size='sm'
                     text={"Edit Plan"}
                     className='edit-plan-btn'
@@ -136,9 +136,9 @@ function ClientDetail() {
                     <p className='workoutPlan'>{checkData(workoutPlan?.title)}</p>
                 </div>
                 <div className='btns-container2'>
-                    <Button variant='utility-primary' onClick={() => setShowPlanSelection(true)} size='sm' text={"Assign Plan"} className='assign-plan-btn'></Button>
+                    <Button variant='utility-primary-primary' onClick={() => setShowPlanSelection(true)} size='sm' text={"Assign Plan"} className='assign-plan-btn'></Button>
                     <Button
-                        variant='utility-primary'
+                        variant='utility-primary-primary'
                         size='sm'
                         text={"Edit Plan"}
                         className='edit-plan-btn'
@@ -438,7 +438,7 @@ function PlanSelection({clientId, onClose }) {
                     <h2>OR</h2>
                     <hr />
                 </div>
-                <Button className='create-plan-btn' variant='utility-secondary' size='sm' text={"Create new plan"} onClick={()=>navigate(`/client/${clientId}/plan/create`)} />
+                <Button className='create-plan-btn' variant='utility-primary-secondary' size='sm' text={"Create new plan"} onClick={()=>navigate(`/client/${clientId}/plan/create`)} />
             </div>
         </div>
     );

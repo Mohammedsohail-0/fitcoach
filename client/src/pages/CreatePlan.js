@@ -317,7 +317,7 @@ export function WorkoutSplit({ splits, setSplits, submitted, selectedDay, setSel
                                     />
                                     <Button
                                         className="add-btn"
-                                        variant="utility"
+                                        variant="utility-primary"
                                         size="sm"
                                         text="Add"
                                         onClick={handleAddMuscleGroup}
@@ -545,7 +545,7 @@ export function ExerciseSection({ selectedDay, splitIds, splitDrafts, setSplitDr
                 />
             ))}
 
-            <Button variant="utility" text="+ Add Exercise" className="add-exercise-btn" onClick={addExercise} />
+            <Button variant="utility-primary" text="+ Add Exercise" className="add-exercise-btn" onClick={addExercise} />
 
             {finishError && <p className="error-text">*{finishError}</p>}
             {currentDayIncomplete && (
@@ -681,7 +681,7 @@ export function ExerciseCard({ exercise, onRemove, onUpdate }) {
                     />
                 ))}
             </div>
-            <Button variant="utility-secondary" className="add-set-btn" text="+ Add Set" size="sm" onClick={addSet} />
+            <Button variant="utility-primary-secondary" className="add-set-btn" text="+ Add Set" size="sm" onClick={addSet} />
         </div>
     );
 }

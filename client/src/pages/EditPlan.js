@@ -98,9 +98,18 @@ function EditPlan() {
                 return prev; // nothing actually changed, avoid an update loop
             }
 
+            // drop exercises whose muscle group was just removed here, so the
+            // save payload no longer includes them — the server archives (if
+            // logged) or deletes (if not) any exercise missing from the
+            // incoming list, but only if it's actually absent from the payload
+            const currentGroupSet = new Set(current.muscleGroups);
+            const survivingExercises = (draft.exercises || []).filter(
+                e => currentGroupSet.has(e.muscleGroup)
+            );
+
             // seed a blank exercise for any group that was just added, same
             // as CreatePlan does on initial load
-            const existingGroups = new Set((draft.exercises || []).map(e => e.muscleGroup));
+            const existingGroups = new Set(survivingExercises.map(e => e.muscleGroup));
             const newDefaults = current.muscleGroups
                 .filter(g => !existingGroups.has(g))
                 .map(g => ({
@@ -117,7 +126,7 @@ function EditPlan() {
                     ...draft,
                     isRestDay: current.isRestDay,
                     muscleGroups: newMuscleGroupsStr,
-                    exercises: [...(draft.exercises || []), ...newDefaults]
+                    exercises: [...survivingExercises, ...newDefaults]
                 }
             };
         });

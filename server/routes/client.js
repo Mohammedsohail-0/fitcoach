@@ -42,7 +42,13 @@ router.get('/plan', authMiddleware, async (req, res) => {
       where: { clientId: client.id, isActive: true },
       include: {
         workoutSplits: {
-          include: { exercises: { orderBy: { order: 'asc' } } },
+          where: { isArchived: false },
+          include: {
+            exercises: {
+              where: { isArchived: false },
+              orderBy: { order: 'asc' }
+            }
+          },
           orderBy: { day: 'asc' }
         }
       }
