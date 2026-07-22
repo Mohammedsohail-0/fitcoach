@@ -102,7 +102,7 @@ function ClientDetail() {
             setIsDeactivating(false);
         }
     };
-
+    
 
     return (
         <>
@@ -151,7 +151,6 @@ function ClientDetail() {
             {showPlanSelection && (
                 <PlanSelection clientId={id} onClose={() => setShowPlanSelection(false)} />
             )}
-
             {showEditClient && (
                 <div className="client-dialog-backdrop" onClick={() => setShowEditClient(false)}>
                     <div className="client-dialog" onClick={(e) => e.stopPropagation()}>
