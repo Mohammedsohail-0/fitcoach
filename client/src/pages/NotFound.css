@@ -1,0 +1,21 @@
+.NotFound-wraper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.NotFound-card {
+  text-align: center;
+}
+
+.NotFound-card h1 {
+  font-size: 72px;
+  margin: 0;
+}
+
+.NotFound-card p {
+  margin: 8px 0 24px;
+  color: #666;
+}

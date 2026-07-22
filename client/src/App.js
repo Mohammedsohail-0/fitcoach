@@ -1,6 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Pages
 import Login from './pages/Login';
@@ -11,6 +14,7 @@ import ClientHome from './pages/ClientHome';
 import CreatePlanPage from './pages/CreatePlan';
 import EditPlanPage from './pages/EditPlan';
 import TemplateList from './pages/TemplateList';
+import NotFound from './pages/NotFound';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { token, role } = useAuth();
@@ -21,6 +25,8 @@ const ProtectedRoute = ({ children, allowedRole }) => {
 
 function App() {
   return (
+    <ErrorBoundary>
+    <ToastContainer position="top-right" autoClose={4000} />
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -67,8 +73,9 @@ function App() {
           <CreatePlanPage />
         </ProtectedRoute>
       }/>
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="*" element={<NotFound />} />
     </Routes>
+    </ErrorBoundary>
   );
 }
 
