@@ -5,7 +5,6 @@ import './ClientDetail.css';
 import Button from "../components/Button"
 import {  useNavigate } from 'react-router-dom';
 
-
 function ClientDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -438,7 +437,7 @@ function PlanSelection({clientId, onClose }) {
                     <h2>OR</h2>
                     <hr />
                 </div>
-                <Button className='create-plan-btn' variant='utility-primary-secondary' size='sm' text={"Create new plan"} onClick={()=>navigate(`/client/${clientId}/plan/create`)} />
+                <Button className='create-plan-btn' variant='utility-secondary' size='sm' text={"Create new plan"} onClick={()=>navigate(`/client/${clientId}/plan/create`)} />
             </div>
         </div>
     );

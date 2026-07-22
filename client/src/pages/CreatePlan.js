@@ -681,7 +681,7 @@ export function ExerciseCard({ exercise, onRemove, onUpdate }) {
                     />
                 ))}
             </div>
-            <Button variant="utility-primary-secondary" className="add-set-btn" text="+ Add Set" size="sm" onClick={addSet} />
+            <Button variant="utility-secondary" className="add-set-btn" text="+ Add Set" size="sm" onClick={addSet} />
         </div>
     );
 }

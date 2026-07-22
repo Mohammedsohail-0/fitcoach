@@ -1,0 +1,25 @@
+.ErrorBoundary-wraper{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.ErrorBoundary-card{
+    display: flex;
+    flex-direction: column;
+    justify-self: center;
+    align-self: center;
+}
+
+.ErrorBoundary-card p{
+    color: var(--text-secondary);
+}
+
+.ErrorBoundary-button-wraper{
+    display: flex;
+    gap: 20px;
+    margin: 2rem;
+}
+
+.image-wraper img{
+    width: 50%;
+}
