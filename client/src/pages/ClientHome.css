@@ -1,0 +1,181 @@
+.client-home {
+  padding: 24px 20px 40px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.client-greeting {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  margin-bottom: 32px;
+}
+
+/* Bodyweight input state */
+.bodyweight-input-section {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.bodyweight-label {
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.bodyweight-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 1.4rem;
+  text-align: center;
+  padding: 20px 16px;
+  margin-bottom: 16px;
+  font-family: var(--font-body);
+}
+
+.bodyweight-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.bodyweight-input-section .btn {
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+/* Week strip */
+.week-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 8px;
+  margin-bottom: 40px;
+}
+
+.week-strip-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  padding: 6px 2px;
+  border-radius: 12px;
+}
+
+.week-strip-day.active {
+  border: 1px solid var(--accent);
+}
+
+.day-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.week-strip-day.active .day-label {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.day-date {
+  font-size: 0.9rem;
+}
+
+.week-strip-day.active .day-date {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.day-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.day-dot.logged {
+  background: var(--accent);
+}
+
+/* Today's workout */
+.today-workout-section h2 {
+  font-size: 1.3rem;
+  margin-bottom: 16px;
+}
+
+.today-workout-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.today-workout-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-secondary);
+}
+
+.split-name {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.split-day {
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
+.today-workout-card-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  gap: 12px;
+}
+
+.muscle-group-list {
+  list-style: none;
+  color: var(--text-primary);
+}
+
+.muscle-group-list li {
+  margin-bottom: 4px;
+}
+
+.muscle-group-list li::before {
+  content: '• ';
+}
+
+.view-exercise-btn {
+  width: auto;
+  white-space: nowrap;
+  background: transparent !important;
+  color: var(--accent) !important;
+  border: 2px dotted var(--accent) !important;
+}
+
+.rest-day-text {
+  padding: 20px;
+  color: var(--text-secondary);
+}
+
+.start-workout-btn {
+  margin-top: 8px;
+}
+
+.empty-state {
+  color: var(--text-secondary);
+  padding: 12px 0;
+}
+
+.loading-text {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--text-secondary);
+}
