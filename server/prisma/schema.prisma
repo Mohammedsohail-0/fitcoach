@@ -47,7 +47,9 @@ model ClientProfile {
   coach        CoachProfile  @relation(fields: [coachId], references: [id])
   workoutPlans WorkoutPlan[]
   workoutLogs  WorkoutLog[]
+  bodyWeightLogs BodyWeightLog[]
 }
+
 model WorkoutPlan {
   id            String        @id @default(uuid())
   coachId       String
@@ -137,4 +139,12 @@ model Invitation {
   isUsed      Boolean     @default(false)
   createdAt   DateTime    @default(now())
   coach CoachProfile @relation(fields: [coachId], references: [id])
+}
+
+model BodyWeightLog {
+  id        String        @id @default(uuid())
+  clientId  String
+  weight    Int
+  loggedAt  DateTime      @default(now())
+  client    ClientProfile @relation(fields: [clientId], references: [id])
 }
